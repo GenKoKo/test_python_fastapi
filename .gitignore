@@ -1,0 +1,82 @@
+# 虛擬環境
+fastapi_env/
+venv/
+env/
+ENV/
+
+# Python 編譯文件
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# 分發 / 打包
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# 單元測試 / 覆蓋率報告
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pyenv
+.python-version
+
+# 環境變量
+.env
+.venv
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# 日誌文件
+*.log
+
+# 數據庫
+*.db
+*.sqlite3
+
+# 臨時文件
+*.tmp
+*.temp
