@@ -2,9 +2,16 @@
 
 # FastAPI 應用運行腳本
 
+# 獲取腳本所在目錄的父目錄（項目根目錄）
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+
+# 切換到項目根目錄
+cd "$PROJECT_ROOT"
+
 # 檢查虛擬環境是否存在
 if [ ! -d "fastapi_env" ]; then
-    echo "❌ 虛擬環境不存在，請先運行 ./setup_venv.sh"
+    echo "❌ 虛擬環境不存在，請先運行 ./scripts/setup_venv.sh"
     exit 1
 fi
 
@@ -25,4 +32,4 @@ echo "🛑 按 Ctrl+C 停止服務器"
 echo ""
 
 # 運行應用
-python main.py
+python run.py
