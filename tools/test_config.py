@@ -13,7 +13,7 @@ def test_config_system():
     print("🧪 測試配置系統...")
     
     try:
-        from config import settings, validate_config, print_config
+        from src.core import settings, validate_config, print_config
         
         print("✅ 配置模組導入成功")
         
@@ -37,7 +37,7 @@ def test_logger_system():
     print("\n🧪 測試日誌系統...")
     
     try:
-        from logger import setup_logger, app_logger
+        from src.core.logger import setup_logger, app_logger
         
         print("✅ 日誌模組導入成功")
         

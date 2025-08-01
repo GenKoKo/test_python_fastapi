@@ -4,9 +4,8 @@
 """
 
 try:
-    from main import app
-    from config import settings
-    from logger import app_logger
+    from src.app.main import app
+    from src.core import settings, app_logger
     
     print("✅ 應用導入成功")
     print(f"配置: {settings.app_name} v{settings.app_version}")

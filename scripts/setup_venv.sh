@@ -3,6 +3,13 @@
 # FastAPI 虛擬環境設置腳本
 # 適用於 macOS/Linux
 
+# 獲取腳本所在目錄的父目錄（項目根目錄）
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+
+# 切換到項目根目錄
+cd "$PROJECT_ROOT"
+
 echo "🚀 開始設置 FastAPI 虛擬環境..."
 
 # 檢查 Python 版本
