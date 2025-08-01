@@ -10,8 +10,11 @@
 -   ✅ 查詢參數和過濾功能
 -   ✅ 數據驗證（使用 Pydantic）
 -   ✅ 自動生成的 API 文檔
--   ✅ 錯誤處理
--   ✅ 統計功能
+-   ✅ 錯誤處理和統計功能
+-   ✅ **環境變量配置管理**
+-   ✅ **結構化日誌記錄**
+-   ✅ **請求追蹤中間件**
+-   ✅ **彩色終端日誌**
 
 ## 安裝和運行
 
@@ -83,7 +86,32 @@ deactivate
 -   **交互式文檔 (Swagger UI)**: http://127.0.0.1:8000/docs
 -   **替代文檔 (ReDoc)**: http://127.0.0.1:8000/redoc
 
-### 4. 自動測試功能
+### 4. 配置管理
+
+🎛️ **新功能**: 支援環境變數配置管理！
+
+#### 配置文件設置
+```bash
+# 複製環境變數範本
+cp .env.example .env
+
+# 編輯配置（可選）
+nano .env
+```
+
+#### 主要配置項
+- **服務器配置**: HOST, PORT, RELOAD
+- **日誌配置**: LOG_LEVEL, LOG_FILE
+- **功能開關**: ENABLE_AUTO_TEST, POPULATE_SAMPLE_DATA
+- **調試模式**: DEBUG
+
+#### 測試配置
+```bash
+# 測試配置和日誌系統
+python test_config.py
+```
+
+### 5. 自動測試功能
 
 🎉 **新功能**: 服務器啟動時會自動運行 API 測試！
 
@@ -235,6 +263,9 @@ pip show fastapi
 
 -   **FastAPI**: 現代、快速的 Web 框架
 -   **Pydantic**: 數據驗證和設置管理
+-   **Pydantic Settings**: 環境變數配置管理
 -   **Uvicorn**: ASGI 服務器
+-   **Python Dotenv**: 環境變數加載
 -   **Python 3.7+**: 編程語言
 -   **虛擬環境**: 依賴隔離和管理
+-   **結構化日誌**: 彩色終端日誌和文件日誌

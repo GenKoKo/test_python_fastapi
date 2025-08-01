@@ -61,6 +61,8 @@ coverage.xml
 *.swp
 *.swo
 *~
+.serena/
+*.pk|
 
 # macOS
 .DS_Store
@@ -72,6 +74,8 @@ Desktop.ini
 
 # 日誌文件
 *.log
+logs/
+log/
 
 # 數據庫
 *.db
