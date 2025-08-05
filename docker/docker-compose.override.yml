@@ -1,0 +1,27 @@
+# Docker Compose 開發環境覆蓋配置
+# 這個文件會自動與 docker-compose.yml 合併
+
+version: '3.8'
+
+services:
+  fastapi-app:
+    # 開發環境特定配置
+    environment:
+      - DEBUG=true
+      - LOG_LEVEL=DEBUG
+      - RELOAD=true
+      - ENABLE_AUTO_TEST=true
+      - POPULATE_SAMPLE_DATA=true
+    
+    # 開發工具端口
+    ports:
+      - "8000:8000"
+      - "5678:5678"  # debugpy 端口
+    
+    # 開發模式命令
+    command: ["python", "run.py"]
+    
+    # 開發環境標籤
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.fastapi-dev.rule=Host(`localhost`)"

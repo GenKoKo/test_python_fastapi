@@ -137,7 +137,99 @@ fastapi dev app/main.py
 deactivate
 ```
 
-### 3. 訪問 API
+## 🐳 Docker 開發環境（推薦）
+
+> **新功能**: 現在支援完整的 Docker 開發環境！提供一致的跨平台開發體驗。
+
+### 1. 前置需求
+
+確保已安裝：
+- [Docker](https://docs.docker.com/get-docker/)
+- [Docker Compose](https://docs.docker.com/compose/install/)
+
+### 2. Docker 快速開始
+
+```bash
+# 一鍵啟動 Docker 開發環境
+just docker-start
+
+# 或者分步執行
+just docker-build    # 構建鏡像
+just docker-dev-bg    # 後台啟動服務
+```
+
+### 3. Docker 開發工作流程
+
+```bash
+# 查看服務狀態
+just docker-status
+
+# 查看服務日誌
+just docker-logs
+
+# 進入容器進行調試
+just docker-shell
+
+# 在 Docker 中運行測試
+just docker-test
+
+# 停止服務
+just docker-stop
+```
+
+### 4. Docker 環境優勢
+
+✅ **環境一致性**: 所有開發者使用相同的環境  
+✅ **快速設置**: 無需手動安裝 Python 依賴  
+✅ **隔離性**: 不影響本地系統環境  
+✅ **生產就緒**: 開發環境接近生產環境  
+✅ **CI/CD 整合**: 與 GitHub Actions 無縫整合  
+
+## 🌟 GitHub Codespaces 雲端開發（推薦）
+
+> **最新功能**: 現在支援 GitHub Codespaces！無需本地安裝，一鍵啟動完整的雲端開發環境。
+
+### 🚀 一鍵啟動
+
+1. **在 GitHub 上啟動**：
+   - 點擊倉庫頁面的 **Code** 按鈕
+   - 選擇 **Codespaces** 標籤
+   - 點擊 **Create codespace on main**
+
+2. **自動設置**：
+   - 環境會自動安裝所有依賴
+   - 配置開發工具和擴展
+   - 準備就緒後顯示歡迎信息
+
+3. **啟動應用**：
+   ```bash
+   # 在 Codespaces 終端中執行
+   just codespaces-start
+   ```
+
+4. **訪問 API**：
+   - 點擊端口 8000 的轉發連結
+   - 添加 `/docs` 查看 Swagger UI
+
+### 🎯 Codespaces 優勢
+
+✅ **零配置**: 無需本地安裝任何工具  
+✅ **雲端運行**: 強大的雲端計算資源  
+✅ **即時分享**: 可以分享 API 連結給其他人  
+✅ **完整工具**: 預裝所有開發工具和擴展  
+✅ **自動同步**: 代碼變更自動同步到 GitHub  
+
+### 📋 Codespaces 專用命令
+
+```bash
+just codespaces-start       # 啟動應用（前台）
+just codespaces-start-bg    # 啟動應用（後台）
+just codespaces-logs        # 查看應用日誌
+just codespaces-stop        # 停止後台應用
+just codespaces-info        # 顯示環境信息
+```
+
+### 6. 訪問 API
 
 -   **API 根路徑**: http://127.0.0.1:8000/
 -   **交互式文檔 (Swagger UI)**: http://127.0.0.1:8000/docs
@@ -218,61 +310,68 @@ just format          # 代碼格式化（需要 black）
 just lint            # 代碼風格檢查（需要 flake8）
 ```
 
+### Docker 命令
+```bash
+just docker-build    # 構建 Docker 開發鏡像
+just docker-dev      # 啟動 Docker 開發環境
+just docker-dev-bg   # 後台啟動 Docker 開發環境
+just docker-test     # 在 Docker 中運行測試
+just docker-shell    # 進入 Docker 容器
+just docker-logs     # 查看 Docker 服務日誌
+just docker-stop     # 停止 Docker 服務
+just docker-clean    # 清理 Docker 資源
+just docker-start    # Docker 一鍵開發環境
+```
+
 ## 📁 項目結構
 
 ```
 fastapi_project/
-├── src/                     # 源代碼目錄
-│   ├── __init__.py
-│   ├── core/               # 核心配置和工具
-│   │   ├── __init__.py
-│   │   ├── config.py       # 配置管理
-│   │   └── logger.py       # 日誌系統
-│   └── app/                # 主應用
-│       ├── __init__.py
-│       ├── main.py         # FastAPI 應用入口
-│       ├── models/         # 數據模型
-│       │   ├── __init__.py
-│       │   ├── item.py     # 商品模型
-│       │   └── user.py     # 用戶模型
-│       ├── routers/        # API 路由
-│       │   ├── __init__.py
-│       │   ├── items.py    # 商品路由
-│       │   ├── users.py    # 用戶路由
-│       │   └── stats.py    # 統計路由
-│       ├── services/       # 業務邏輯層
-│       │   ├── __init__.py
-│       │   ├── item_service.py # 商品服務
-│       │   └── user_service.py # 用戶服務
-│       ├── database/       # 數據庫層
-│       │   ├── __init__.py
-│       │   └── memory_db.py # 內存數據庫
-│       └── utils/          # 工具函數
-│           ├── __init__.py
-│           ├── helpers.py  # 輔助函數
-│           └── middleware.py # 中間件
-├── tests/                  # 測試文件
-│   ├── __init__.py
-│   ├── conftest.py         # pytest 配置
-│   ├── test_items.py       # 商品測試
-│   └── test_users.py       # 用戶測試
-├── tools/                  # 開發工具和測試腳本
-│   ├── test_config.py      # 配置測試
-│   ├── test_import.py      # 導入測試
-│   ├── test_new_structure.py # 結構測試
-│   └── test_*.py          # 其他測試工具
-├── scripts/                # 部署和運行腳本
-│   ├── setup_venv.sh       # 環境設置
-│   ├── run_app.sh          # 應用運行
-│   └── test_in_venv.sh     # 測試腳本
-├── docs/                   # 文檔目錄
-│   ├── PROJECT_STRUCTURE.md
-│   └── MIGRATION.md
-├── run.py                  # 應用啟動器
-├── requirements.txt        # 依賴管理
-├── .env.example           # 環境變量範本
-└── README.md              # 項目文檔
+├── 📁 src/                          # 源代碼目錄
+│   ├── core/                        # 核心配置和工具
+│   │   ├── config.py               # 配置管理
+│   │   └── logger.py               # 日誌系統
+│   └── app/                        # 主應用
+│       ├── main.py                 # FastAPI 應用入口
+│       ├── models/                 # 數據模型
+│       ├── routers/                # API 路由
+│       ├── services/               # 業務邏輯層
+│       ├── database/               # 數據庫層
+│       └── utils/                  # 工具函數
+│
+├── 📁 tests/                        # 測試文件
+├── 📁 tools/                        # 開發工具和測試腳本
+├── 📁 docs/                         # 文檔目錄
+│
+├── 📁 docker/                       # Docker 配置目錄 ⭐ 最佳實踐
+│   ├── docker-compose.yml          # 主要 Docker Compose 配置
+│   ├── docker-compose.override.yml # 開發環境覆蓋配置
+│   └── docker-compose.prod.yml     # 生產環境配置
+│
+├── 📁 config/                       # 其他配置文件
+│   ├── env/                        # 環境變數配置
+│   │   ├── .env.example            # 環境變數範本
+│   │   └── .env.docker             # Docker 環境變數
+│   ├── .devcontainer/              # GitHub Codespaces 配置
+│   └── github/                     # GitHub Actions 配置
+│       └── .github/workflows/ci.yml # CI/CD 流程
+│
+├── 📁 deploy/                       # 部署相關文件 ⭐ 整理後
+│   └── scripts/                    # 部署腳本
+│       ├── setup_venv.sh           # 環境設置
+│       ├── run_app.sh              # 應用運行
+│       └── test_in_venv.sh         # 測試腳本
+│
+├── 📄 Dockerfile                    # Docker 鏡像定義 ⭐ 根目錄標準
+├── 📄 .dockerignore                # Docker 忽略文件
+├── 📄 docker-compose.yml           # 主要 Docker Compose（符號連結）
+├── 📄 run.py                       # 應用啟動器
+├── 📄 requirements.txt             # 依賴管理
+├── 📄 justfile                     # Just 命令定義
+└── 📄 README.md                    # 項目文檔
 ```
+
+> **📋 結構說明**: 為了更好的組織和維護，我們將配置文件整理到 `config/` 目錄，部署腳本移到 `deploy/` 目錄。重要文件通過符號連結保持兼容性。
 
 ### 🏗️ 架構說明
 

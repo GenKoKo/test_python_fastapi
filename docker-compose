@@ -1,0 +1,5 @@
+#!/bin/bash
+# Docker Compose 便利腳本
+# 自動使用 docker/docker-compose.yml 作為主配置文件
+
+exec docker-compose -f docker/docker-compose.yml "$@"

@@ -85,3 +85,21 @@ log/
 # 臨時文件
 *.tmp
 *.temp
+
+# Docker
+.docker/
+docker-compose.override.yml.local
+.env.local
+.env.production
+.env.staging
+
+# 容器數據
+volumes/
+data/
+
+# SSL 證書
+ssl/
+certs/
+
+# Nginx 配置
+nginx.conf.local
