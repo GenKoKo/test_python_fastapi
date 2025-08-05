@@ -63,6 +63,7 @@ coverage.xml
 *~
 .serena/
 *.pkl
+.kiro/
 
 # macOS
 .DS_Store
