@@ -97,7 +97,7 @@ jobs:
             - name: Update devcontainer.json with new image
               run: |
                   # 更新 devcontainer.json 中的鏡像引用
-                  IMAGE_TAG="${{ needs.build-codespaces-image.outputs.image-tag }}"
+                  IMAGE_TAG=$(echo "${{ needs.build-codespaces-image.outputs.image-tag }}" | head -n 1)
                   echo "Updating devcontainer.json with image: $IMAGE_TAG"
 
                   # 創建臨時的 devcontainer.json 更新
