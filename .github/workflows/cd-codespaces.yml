@@ -17,7 +17,11 @@ on:
                 default: false
                 type: boolean
 
-
+permissions:
+    contents: write
+    packages: write
+    actions: write
+    codespaces: write
 
 env:
     REGISTRY: ghcr.io
@@ -28,12 +32,6 @@ jobs:
     build-codespaces-image:
         runs-on: ubuntu-latest
         name: Build Codespaces Image
-
-        permissions:
-            contents: write
-            packages: write
-            actions: write
-            codespaces: write
 
         outputs:
             image-digest: ${{ steps.build.outputs.digest }}
@@ -83,8 +81,6 @@ jobs:
         runs-on: ubuntu-latest
         name: Update Codespaces Configuration
         needs: build-codespaces-image
-        permissions:
-            contents: write
 
         steps:
             - name: Checkout code
@@ -157,7 +153,7 @@ jobs:
                   - **工作流程**: ${{ github.run_id }}
 
                   ## 快速開始
-                  \`\`\`bash
+                  ```bash
                   # 啟動應用
                   just dev
 
@@ -166,7 +162,7 @@ jobs:
 
                   # 查看 API 文檔
                   # 訪問: http://localhost:8000/docs
-                  \`\`\`
+                  ```
 
                   ## 自動部署狀態
                   ✅ 鏡像構建完成
@@ -180,10 +176,6 @@ jobs:
         name: Trigger Codespaces Prebuild
         needs: [build-codespaces-image, update-codespaces-config]
         if: github.event.inputs.force_rebuild == 'true' || contains(github.event.head_commit.message, '[prebuild]')
-        permissions:
-            actions: write
-            contents: read
-            codespaces: write
 
         steps:
             - name: Trigger Codespaces Prebuild
@@ -211,9 +203,6 @@ jobs:
         runs-on: ubuntu-latest
         name: Verify Codespaces Deployment
         needs: [build-codespaces-image, update-codespaces-config]
-        permissions:
-            contents: read
-            packages: read
 
         steps:
             - name: Checkout code
@@ -296,9 +285,15 @@ jobs:
 
                   echo "" >> $GITHUB_STEP_SUMMARY
                   echo "## 部署信息" >> $GITHUB_STEP_SUMMARY
-                  echo "- **鏡像**: \`${{ needs.build-codespaces-image.outputs.image-tag }}\`" >> $GITHUB_STEP_SUMMARY
-                  echo "- **Commit**: \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
-                  echo "- **分支**: \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
+                  echo "- **鏡像**: 
+${{ needs.build-codespaces-image.outputs.image-tag }}
+"
+                  echo "- **Commit**: 
+${{ github.sha }}
+"
+                  echo "- **分支**: 
+${{ github.ref_name }}
+"
                   echo "- **工作流程**: [\#${{ github.run_number }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
 
                   echo "" >> $GITHUB_STEP_SUMMARY
@@ -306,7 +301,9 @@ jobs:
                   echo "1. 前往 [GitHub Codespaces](${{ github.server_url }}/${{ github.repository }}/codespaces)" >> $GITHUB_STEP_SUMMARY
                   echo "2. 創建新的 Codespace 或重啟現有的 Codespace" >> $GITHUB_STEP_SUMMARY
                   echo "3. 等待環境自動配置完成" >> $GITHUB_STEP_SUMMARY
-                  echo "4. 運行 \`just dev\` 啟動開發服務器" >> $GITHUB_STEP_SUMMARY
+                  echo "4. 運行 
+just dev
+ 啟動開發服務器" >> $GITHUB_STEP_SUMMARY
                   echo "5. 訪問 http://localhost:8000/docs 查看 API 文檔" >> $GITHUB_STEP_SUMMARY
 
             - name: Notify deployment status
