@@ -6,7 +6,8 @@ FastAPI 測試腳本
 
 import requests
 import json
-import time
+
+# import time  # 暫時註釋掉未使用的導入
 
 # API 基礎 URL
 BASE_URL = "http://127.0.0.1:8000"
