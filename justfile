@@ -24,9 +24,10 @@
 
 # 🔧 設定變數
 python := "python3"
-venv_dir := "fastapi_env"
+venv_dir := ".venv"
 venv_python := venv_dir + "/bin/python"
-venv_pip := venv_dir + "/bin/pip"
+# 使用 uv 進行依賴管理
+uv_run := "uv run"
 # 容器引擎設定 (支援 Docker 和 Podman)
 # 使用 Podman 作為默認容器引擎
 docker_compose := "DOCKER_HOST=unix:///var/run/docker.sock docker-compose -f docker/docker-compose.yml"
@@ -36,19 +37,20 @@ default:
     @just --list
 
 # 🚀 開發環境設置
-# 創建並設置虛擬環境
+# 使用 uv 創建並設置虛擬環境
 setup:
     #!/usr/bin/env bash
-    echo "🚀 開始設置 FastAPI 虛擬環境..."
+    echo "🚀 開始設置 FastAPI 開發環境 (使用 uv)..."
     echo "📋 檢查 Python 版本..."
     {{python}} --version
-    echo "📦 創建虛擬環境..."
-    {{python}} -m venv {{venv_dir}}
-    echo "🔄 升級 pip..."
-    {{venv_pip}} install --upgrade pip
-    echo "📚 安裝項目依賴..."
-    {{venv_pip}} install -r requirements/base.txt
-    echo "✅ 虛擬環境設置完成！"
+    echo "📦 檢查 uv 安裝..."
+    if ! command -v uv >/dev/null 2>&1; then
+        echo "❌ uv 未安裝，請先安裝 uv: https://docs.astral.sh/uv/getting-started/installation/"
+        exit 1
+    fi
+    echo "📚 同步項目依賴..."
+    uv sync --dev
+    echo "✅ 開發環境設置完成！"
 
 # 🏃 運行應用
 run:
@@ -58,7 +60,7 @@ run:
         exit 1
     fi
     echo "🚀 啟動 FastAPI 應用..."
-    {{venv_python}} run.py
+    {{uv_run}} python run.py
 
 # 🔧 開發模式運行
 dev:
@@ -68,7 +70,7 @@ dev:
         exit 1
     fi
     echo "🔧 開發模式啟動 FastAPI 應用..."
-    {{venv_dir}}/bin/uvicorn src.app.main:app --reload --host 127.0.0.1 --port 8000
+    {{uv_run}} uvicorn src.app.main:app --reload --host 127.0.0.1 --port 8000
 
 # 🧪 測試相關命令
 # 運行 API 功能測試
@@ -79,7 +81,7 @@ test:
         exit 1
     fi
     echo "🧪 運行 API 功能測試..."
-    {{venv_python}} scripts/test_api.py
+    {{uv_run}} python scripts/test_api.py
 
 # 運行單元測試
 test-unit:
@@ -89,7 +91,7 @@ test-unit:
         exit 1
     fi
     echo "🧪 運行單元測試..."
-    {{venv_python}} -m pytest tests/ -v
+    {{uv_run}} pytest tests/ -v
 
 # 運行測試並生成覆蓋率報告
 test-coverage:
@@ -99,7 +101,7 @@ test-coverage:
         exit 1
     fi
     echo "📊 運行測試並生成覆蓋率報告..."
-    {{venv_python}} -m pytest tests/ --cov=src --cov-report=html --cov-report=term
+    {{uv_run}} pytest tests/ --cov=src --cov-report=html --cov-report=term
 
 # 運行代碼格式化
 format:
@@ -109,7 +111,7 @@ format:
         exit 1
     fi
     echo "🎨 格式化 Python 代碼..."
-    {{venv_python}} -m black src/ tests/ scripts/
+    {{uv_run}} black src/ tests/ scripts/ run.py
     echo "✅ 代碼格式化完成"
 
 # 運行代碼檢查
@@ -121,33 +123,32 @@ lint:
     fi
     echo "🔍 檢查代碼品質..."
     echo "📋 運行 flake8..."
-    {{venv_python}} -m flake8 src/ tests/ scripts/
+    {{uv_run}} flake8 src/ tests/ scripts/
     echo "📋 運行 mypy..."
-    {{venv_python}} -m mypy src/ --ignore-missing-imports
+    {{uv_run}} mypy src/ --ignore-missing-imports
     echo "✅ 代碼檢查完成"
 
-# 更新依賴並生成 requirements 文件
+# 更新依賴鎖定文件
 freeze:
     #!/usr/bin/env bash
-    if [ ! -d "{{venv_dir}}" ]; then
-        echo "❌ 虛擬環境不存在，請先運行: just setup"
-        exit 1
-    fi
-    echo "📦 更新依賴文件..."
-    {{venv_pip}} freeze > requirements/base.txt
-    echo "✅ requirements/base.txt 已更新"
+    echo "📦 更新依賴鎖定文件..."
+    uv lock
+    echo "✅ uv.lock 已更新"
+    echo "💡 依賴現在由 pyproject.toml 和 uv.lock 管理"
 
 # 安裝新的依賴包
 install PACKAGE:
     #!/usr/bin/env bash
-    if [ ! -d "{{venv_dir}}" ]; then
-        echo "❌ 虛擬環境不存在，請先運行: just setup"
-        exit 1
-    fi
     echo "📦 安裝依賴包: {{PACKAGE}}"
-    {{venv_pip}} install {{PACKAGE}}
-    echo "✅ {{PACKAGE}} 安裝完成"
-    echo "💡 記得運行 'just freeze' 更新 requirements 文件"
+    uv add {{PACKAGE}}
+    echo "✅ {{PACKAGE}} 安裝完成並已更新 pyproject.toml"
+
+# 安裝開發依賴包
+install-dev PACKAGE:
+    #!/usr/bin/env bash
+    echo "📦 安裝開發依賴包: {{PACKAGE}}"
+    uv add --dev {{PACKAGE}}
+    echo "✅ {{PACKAGE}} 安裝完成並已更新 pyproject.toml"
 
 # 🐳 Docker 開發命令
 # 構建 Docker 開發鏡像
@@ -225,6 +226,13 @@ codespaces-setup:
             curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to /usr/local/bin
         fi
         
+        # 安裝 uv（如果尚未安裝）
+        if ! command -v uv >/dev/null 2>&1; then
+            echo "📦 安裝 uv 包管理器..."
+            curl -LsSf https://astral.sh/uv/install.sh | sh
+            source ~/.bashrc
+        fi
+        
         # 設置 Git 配置（如果需要）
         if [ -n "$GITHUB_USER" ] && [ -z "$(git config --global user.name)" ]; then
             echo "🔧 配置 Git 用戶信息..."
@@ -255,9 +263,8 @@ codespaces-setup:
     fi
     
     # 通用設置
-    echo "📦 更新 Python 依賴..."
-    pip install --upgrade pip
-    pip install -r requirements/dev.txt
+    echo "📦 同步 Python 依賴 (使用 uv)..."
+    uv sync --dev
     
     # 創建必要的目錄
     mkdir -p logs
@@ -335,9 +342,8 @@ codespaces-reset:
             echo "🧹 清理日誌文件..."
             rm -rf logs/*.log 2>/dev/null || true
             
-            echo "🔄 重新安裝依賴..."
-            pip install --upgrade pip
-            pip install -r requirements/dev.txt
+            echo "🔄 重新同步依賴..."
+            uv sync --dev
             
             echo "✅ Codespaces 環境重置完成！"
             echo "💡 運行 'just codespaces-status' 檢查狀態"
@@ -357,12 +363,18 @@ status:
     
     # 檢查虛擬環境
     if [ -d "{{venv_dir}}" ]; then
-        echo "✅ 虛擬環境: 已創建"
-        echo "📍 Python 版本: $({{venv_python}} --version)"
-        echo "📦 pip 版本: $({{venv_pip}} --version | cut -d' ' -f2)"
+        echo "✅ 虛擬環境: 已創建 (uv 管理)"
+        echo "📍 Python 版本: $({{venv_python}} --version 2>/dev/null || echo '未知')"
+        echo "📦 uv 版本: $(uv --version 2>/dev/null || echo '未安裝')"
     else
         echo "❌ 虛擬環境: 未創建"
         echo "💡 運行 'just setup' 創建虛擬環境"
+    fi
+    
+    # 檢查舊環境
+    if [ -d "fastapi_env" ]; then
+        echo "⚠️ 發現舊的 fastapi_env 環境，建議清理"
+        echo "💡 運行 'just clean' 清理舊環境"
     fi
     
     echo ""
@@ -445,7 +457,11 @@ clean:
     echo "🧹 清理虛擬環境..."
     if [ -d "{{venv_dir}}" ]; then
         rm -rf {{venv_dir}}
-        echo "✅ 虛擬環境已刪除"
+        echo "✅ uv 虛擬環境已刪除"
+    fi
+    if [ -d "fastapi_env" ]; then
+        rm -rf fastapi_env
+        echo "✅ 舊的 fastapi_env 虛擬環境已刪除"
     fi
 
 # 清理 Python 緩存文件
@@ -470,7 +486,7 @@ clean-all: clean clean-cache
 reinstall: clean
     #!/usr/bin/env bash
     echo "🔄 重新安裝項目環境..."
-    just setup
+    uv sync --dev
     echo "✅ 項目環境重新安裝完成"
 
 # 🚀 快速開始命令

@@ -13,17 +13,17 @@ from .config import settings
 
 class ColoredFormatter(logging.Formatter):
     """彩色日誌格式化器"""
-    
+
     # ANSI 顏色代碼
     COLORS = {
-        'DEBUG': '\033[36m',      # 青色
-        'INFO': '\033[32m',       # 綠色
-        'WARNING': '\033[33m',    # 黃色
-        'ERROR': '\033[31m',      # 紅色
-        'CRITICAL': '\033[35m',   # 紫色
-        'RESET': '\033[0m'        # 重置
+        "DEBUG": "\033[36m",  # 青色
+        "INFO": "\033[32m",  # 綠色
+        "WARNING": "\033[33m",  # 黃色
+        "ERROR": "\033[31m",  # 紅色
+        "CRITICAL": "\033[35m",  # 紫色
+        "RESET": "\033[0m",  # 重置
     }
-    
+
     def format(self, record):
         # 添加顏色
         if record.levelname in self.COLORS:
@@ -32,7 +32,7 @@ class ColoredFormatter(logging.Formatter):
                 f"{record.levelname}"
                 f"{self.COLORS['RESET']}"
             )
-        
+
         return super().format(record)
 
 
@@ -40,66 +40,63 @@ def setup_logger(
     name: str = "fastapi_app",
     level: Optional[str] = None,
     log_file: Optional[str] = None,
-    format_string: Optional[str] = None
+    format_string: Optional[str] = None,
 ) -> logging.Logger:
     """
     設置日誌記錄器
-    
+
     Args:
         name: 日誌記錄器名稱
         level: 日誌級別
         log_file: 日誌文件路徑
         format_string: 日誌格式字符串
-    
+
     Returns:
         配置好的日誌記錄器
     """
-    
+
     # 使用配置中的默認值
     level = level or settings.log_level
     log_file = log_file or settings.log_file
     format_string = format_string or settings.log_format
-    
+
     # 創建日誌記錄器
     logger = logging.getLogger(name)
     logger.setLevel(getattr(logging, level.upper()))
-    
+
     # 清除現有的處理器
     logger.handlers.clear()
-    
+
     # 控制台處理器
     console_handler = logging.StreamHandler(sys.stdout)
     console_handler.setLevel(getattr(logging, level.upper()))
-    
+
     # 使用彩色格式化器
     if sys.stdout.isatty():  # 如果是終端，使用彩色
         console_formatter = ColoredFormatter(format_string)
     else:  # 如果是重定向，使用普通格式
         console_formatter = logging.Formatter(format_string)
-    
+
     console_handler.setFormatter(console_formatter)
     logger.addHandler(console_handler)
-    
+
     # 文件處理器（如果指定了日誌文件）
     if log_file:
         # 確保日誌目錄存在
         log_path = Path(log_file)
         log_path.parent.mkdir(parents=True, exist_ok=True)
-        
+
         # 使用輪轉文件處理器
         file_handler = logging.handlers.RotatingFileHandler(
-            log_file,
-            maxBytes=10*1024*1024,  # 10MB
-            backupCount=5,
-            encoding='utf-8'
+            log_file, maxBytes=10 * 1024 * 1024, backupCount=5, encoding="utf-8"  # 10MB
         )
         file_handler.setLevel(getattr(logging, level.upper()))
-        
+
         # 文件日誌不使用顏色
         file_formatter = logging.Formatter(format_string)
         file_handler.setFormatter(file_formatter)
         logger.addHandler(file_handler)
-    
+
     return logger
 
 
@@ -116,10 +113,11 @@ app_logger = setup_logger("fastapi_app")
 def log_function_call(logger: Optional[logging.Logger] = None):
     """
     函數調用日誌裝飾器
-    
+
     Args:
         logger: 日誌記錄器，如果為 None 則使用默認記錄器
     """
+
     def decorator(func):
         def wrapper(*args, **kwargs):
             log = logger or app_logger
@@ -131,7 +129,9 @@ def log_function_call(logger: Optional[logging.Logger] = None):
             except Exception as e:
                 log.error(f"函數 {func.__name__} 執行失敗: {e}")
                 raise
+
         return wrapper
+
     return decorator
 
 
@@ -166,7 +166,7 @@ def log_shutdown():
 if __name__ == "__main__":
     # 測試日誌記錄
     test_logger = setup_logger("test", level="DEBUG")
-    
+
     test_logger.debug("這是調試信息")
     test_logger.info("這是信息")
     test_logger.warning("這是警告")

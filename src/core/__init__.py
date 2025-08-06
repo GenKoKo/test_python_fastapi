@@ -7,10 +7,10 @@ from .logger import app_logger, setup_logger, log_startup, log_shutdown
 
 __all__ = [
     "settings",
-    "validate_config", 
+    "validate_config",
     "print_config",
     "app_logger",
     "setup_logger",
     "log_startup",
-    "log_shutdown"
+    "log_shutdown",
 ]

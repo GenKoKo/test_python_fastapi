@@ -19,7 +19,7 @@ def format_response(data: Any, message: str = "success") -> Dict[str, Any]:
         "status": "success",
         "message": message,
         "data": data,
-        "timestamp": time.time()
+        "timestamp": time.time(),
     }
 
 
@@ -29,11 +29,13 @@ def format_error_response(error: str, status_code: int = 500) -> Dict[str, Any]:
         "status": "error",
         "message": error,
         "status_code": status_code,
-        "timestamp": time.time()
+        "timestamp": time.time(),
     }
 
 
-def validate_pagination(page: int = 1, size: int = 10, max_size: int = 100) -> Dict[str, int]:
+def validate_pagination(
+    page: int = 1, size: int = 10, max_size: int = 100
+) -> Dict[str, int]:
     """驗證分頁參數"""
     if page < 1:
         page = 1
@@ -41,14 +43,10 @@ def validate_pagination(page: int = 1, size: int = 10, max_size: int = 100) -> D
         size = 10
     if size > max_size:
         size = max_size
-    
+
     offset = (page - 1) * size
-    
-    return {
-        "page": page,
-        "size": size,
-        "offset": offset
-    }
+
+    return {"page": page, "size": size, "offset": offset}
 
 
 def log_function_execution(func_name: str, duration: float, success: bool = True):
