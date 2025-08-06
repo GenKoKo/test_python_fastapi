@@ -126,7 +126,7 @@ jobs:
 
             - name: Test Docker Compose
               run: |
-                  docker-compose -f docker/docker-compose.yml --profile testing run --rm fastapi-test
+                  docker compose -f docker/docker-compose.yml --profile testing run --rm fastapi-test
 
     # 安全掃描
     security:
