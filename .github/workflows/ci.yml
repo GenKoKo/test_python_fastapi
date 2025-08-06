@@ -117,7 +117,7 @@ jobs:
 
             - name: Run tests in Docker
               run: |
-                  docker run --rm fastapi-test:latest python -m pytest tests/ -v
+                  docker run --rm fastapi-test:latest uv run pytest tests/ -v
 
             - name: Test Docker Compose
               run: |
@@ -141,7 +141,7 @@ jobs:
                   output: "trivy-results.sarif"
 
             - name: Upload Trivy scan results to GitHub Security tab
-              uses: github/codeql-action/upload-sarif@v2
+              uses: github/codeql-action/upload-sarif@v3
               if: always()
               with:
                   sarif_file: "trivy-results.sarif"

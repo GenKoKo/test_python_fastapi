@@ -44,15 +44,14 @@ RUN if [ "$CODESPACES" = "true" ]; then \
     curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to /usr/local/bin; \
     fi
 
-# 複製依賴文件
-COPY requirements/ requirements/
+# 安裝 uv
+RUN pip install uv
 
-# 安裝 Python 依賴
-RUN pip install --upgrade pip && \
-    pip install -r requirements/dev.txt
+# 複製項目配置文件
+COPY pyproject.toml uv.lock ./
 
-# 安裝開發工具
-RUN pip install pytest pytest-cov black flake8 mypy
+# 安裝 Python 依賴（包括開發依賴）
+RUN uv sync --dev
 
 # Codespaces 特定的預安裝
 RUN if [ "$PREBUILD" = "true" ]; then \
@@ -68,7 +67,7 @@ COPY . .
 EXPOSE 8000
 
 # 開發模式啟動命令
-CMD ["python", "run.py"]
+CMD ["uv", "run", "python", "run.py"]
 
 # 生產階段
 FROM base as production
@@ -76,13 +75,14 @@ FROM base as production
 # 創建非 root 用戶
 RUN groupadd -r appuser && useradd -r -g appuser appuser
 
-# 複製依賴文件
-COPY requirements.txt .
+# 安裝 uv
+RUN pip install uv
+
+# 複製項目配置文件
+COPY pyproject.toml uv.lock ./
 
 # 安裝生產依賴
-RUN pip install --upgrade pip && \
-    pip install -r requirements.txt && \
-    pip install gunicorn
+RUN uv sync --no-dev
 
 # 複製源代碼
 COPY --chown=appuser:appuser . .
@@ -98,4 +98,4 @@ HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8000/stats/health || exit 1
 
 # 生產模式啟動命令
-CMD ["gunicorn", "src.app.main:app", "-w", "4", "-k", "uvicorn.workers.UvicornWorker", "-b", "0.0.0.0:8000"]
+CMD ["uv", "run", "gunicorn", "src.app.main:app", "-w", "4", "-k", "uvicorn.workers.UvicornWorker", "-b", "0.0.0.0:8000"]
