@@ -17,11 +17,7 @@ on:
                 default: false
                 type: boolean
 
-permissions:
-    contents: write
-    packages: write
-    actions: write
-    codespaces: write
+
 
 env:
     REGISTRY: ghcr.io
@@ -34,8 +30,10 @@ jobs:
         name: Build Codespaces Image
 
         permissions:
-            contents: read
+            contents: write
             packages: write
+            actions: write
+            codespaces: write
 
         outputs:
             image-digest: ${{ steps.build.outputs.digest }}
