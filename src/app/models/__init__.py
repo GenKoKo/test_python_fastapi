@@ -6,11 +6,4 @@
 from .item import Item, ItemCreate, ItemUpdate
 from .user import User, UserCreate, UserUpdate
 
-__all__ = [
-    "Item",
-    "ItemCreate", 
-    "ItemUpdate",
-    "User",
-    "UserCreate",
-    "UserUpdate"
-]
+__all__ = ["Item", "ItemCreate", "ItemUpdate", "User", "UserCreate", "UserUpdate"]

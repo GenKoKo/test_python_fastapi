@@ -6,8 +6,4 @@
 from .helpers import generate_id, format_response
 from .middleware import LoggingMiddleware
 
-__all__ = [
-    "generate_id",
-    "format_response",
-    "LoggingMiddleware"
-]
+__all__ = ["generate_id", "format_response", "LoggingMiddleware"]

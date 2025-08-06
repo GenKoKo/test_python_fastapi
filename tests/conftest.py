@@ -39,7 +39,7 @@ def sample_item():
         "name": "測試商品",
         "description": "這是一個測試商品",
         "price": 100.0,
-        "is_available": True
+        "is_available": True,
     }
 
 
@@ -49,5 +49,5 @@ def sample_user():
     return {
         "username": "testuser",
         "email": "test@example.com",
-        "full_name": "Test User"
+        "full_name": "Test User",
     }

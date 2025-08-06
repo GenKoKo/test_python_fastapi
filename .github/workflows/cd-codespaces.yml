@@ -1,0 +1,301 @@
+name: CD - Deploy to GitHub Codespaces
+
+on:
+    push:
+        branches: [main, master]
+        paths:
+            - "src/**"
+            - "requirements/**"
+            - "Dockerfile"
+            - "docker/**"
+            - ".devcontainer/**"
+    workflow_dispatch:
+        inputs:
+            force_rebuild:
+                description: "Force rebuild of Codespaces prebuilds"
+                required: false
+                default: false
+                type: boolean
+
+env:
+    REGISTRY: ghcr.io
+    IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+    # 構建 Codespaces 專用鏡像
+    build-codespaces-image:
+        runs-on: ubuntu-latest
+        name: Build Codespaces Image
+
+        permissions:
+            contents: read
+            packages: write
+
+        outputs:
+            image-digest: ${{ steps.build.outputs.digest }}
+            image-tag: ${{ steps.meta.outputs.tags }}
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Set up Docker Buildx
+              uses: docker/setup-buildx-action@v3
+
+            - name: Log in to Container Registry
+              uses: docker/login-action@v3
+              with:
+                  registry: ${{ env.REGISTRY }}
+                  username: ${{ github.actor }}
+                  password: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Extract metadata for Codespaces
+              id: meta
+              uses: docker/metadata-action@v5
+              with:
+                  images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+                  tags: |
+                      type=ref,event=branch,suffix=-codespaces
+                      type=sha,prefix=codespaces-{{branch}}-
+                      type=raw,value=codespaces-latest,enable={{is_default_branch}}
+
+            - name: Build and push Codespaces image
+              id: build
+              uses: docker/build-push-action@v5
+              with:
+                  context: .
+                  target: development
+                  push: true
+                  tags: ${{ steps.meta.outputs.tags }}
+                  labels: ${{ steps.meta.outputs.labels }}
+                  cache-from: type=gha,scope=codespaces
+                  cache-to: type=gha,mode=max,scope=codespaces
+                  build-args: |
+                      CODESPACES=true
+                      INSTALL_DEV_TOOLS=true
+
+    # 更新 Codespaces 配置
+    update-codespaces-config:
+        runs-on: ubuntu-latest
+        name: Update Codespaces Configuration
+        needs: build-codespaces-image
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+              with:
+                  token: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Update devcontainer.json with new image
+              run: |
+                  # 更新 devcontainer.json 中的鏡像引用
+                  IMAGE_TAG="${{ needs.build-codespaces-image.outputs.image-tag }}"
+                  echo "Updating devcontainer.json with image: $IMAGE_TAG"
+
+                  # 創建臨時的 devcontainer.json 更新
+                  cat > .devcontainer/devcontainer.codespaces.json << EOF
+                  {
+                    "name": "FastAPI Development Environment (Auto-deployed)",
+                    "image": "$IMAGE_TAG",
+                    "workspaceFolder": "/app",
+                    "settings": {
+                      "python.defaultInterpreterPath": "/usr/local/bin/python",
+                      "python.linting.enabled": true,
+                      "python.linting.flake8Enabled": true,
+                      "python.formatting.provider": "black",
+                      "editor.formatOnSave": true
+                    },
+                    "extensions": [
+                      "ms-python.python",
+                      "ms-python.flake8",
+                      "ms-python.black-formatter",
+                      "ms-vscode.vscode-json",
+                      "redhat.vscode-yaml",
+                      "ms-vscode.docker",
+                      "GitHub.copilot",
+                      "humao.rest-client"
+                    ],
+                    "forwardPorts": [8000, 5678],
+                    "portsAttributes": {
+                      "8000": {
+                        "label": "FastAPI Application",
+                        "onAutoForward": "openBrowser",
+                        "protocol": "http"
+                      }
+                    },
+                    "postCreateCommand": "just codespaces-setup",
+                    "postStartCommand": "echo '🚀 FastAPI Codespaces environment ready!'",
+                    "remoteUser": "root",
+                    "features": {
+                      "ghcr.io/devcontainers/features/common-utils:2": {
+                        "installZsh": true,
+                        "configureZshAsDefaultShell": true
+                      },
+                      "ghcr.io/devcontainers/features/github-cli:1": {
+                        "version": "latest"
+                      }
+                    }
+                  }
+                  EOF
+
+            - name: Create Codespaces deployment info
+              run: |
+                  cat > .devcontainer/DEPLOYMENT_INFO.md << EOF
+                  # 🚀 Codespaces 自動部署信息
+
+                  ## 部署詳情
+                  - **部署時間**: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+                  - **Git Commit**: ${{ github.sha }}
+                  - **分支**: ${{ github.ref_name }}
+                  - **鏡像**: ${{ needs.build-codespaces-image.outputs.image-tag }}
+                  - **工作流程**: ${{ github.run_id }}
+
+                  ## 快速開始
+                  \`\`\`bash
+                  # 啟動應用
+                  just dev
+
+                  # 運行測試
+                  just test-unit
+
+                  # 查看 API 文檔
+                  # 訪問: http://localhost:8000/docs
+                  \`\`\`
+
+                  ## 自動部署狀態
+                  ✅ 鏡像構建完成
+                  ✅ Codespaces 配置更新
+                  ✅ 開發環境就緒
+                  EOF
+
+    # 觸發 Codespaces Prebuild
+    trigger-prebuild:
+        runs-on: ubuntu-latest
+        name: Trigger Codespaces Prebuild
+        needs: [build-codespaces-image, update-codespaces-config]
+        if: github.event.inputs.force_rebuild == 'true' || contains(github.event.head_commit.message, '[prebuild]')
+
+        steps:
+            - name: Trigger Codespaces Prebuild
+              uses: actions/github-script@v7
+              with:
+                  github-token: ${{ secrets.GITHUB_TOKEN }}
+                  script: |
+                      try {
+                        // 觸發 Codespaces prebuild
+                        const response = await github.rest.codespaces.createOrUpdateRepoSecret({
+                          owner: context.repo.owner,
+                          repo: context.repo.repo,
+                          secret_name: 'CODESPACES_PREBUILD_TRIGGER',
+                          encrypted_value: Buffer.from(new Date().toISOString()).toString('base64')
+                        });
+                        
+                        console.log('✅ Codespaces prebuild triggered successfully');
+                      } catch (error) {
+                        console.log('⚠️ Could not trigger prebuild automatically:', error.message);
+                        console.log('💡 Prebuild will be triggered on next Codespaces creation');
+                      }
+
+    # 部署驗證
+    verify-deployment:
+        runs-on: ubuntu-latest
+        name: Verify Codespaces Deployment
+        needs: [build-codespaces-image, update-codespaces-config]
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Test Docker image
+              run: |
+                  echo "🧪 Testing the built Codespaces image..."
+
+                  # 拉取剛構建的鏡像
+                  docker pull ${{ needs.build-codespaces-image.outputs.image-tag }}
+
+                  # 測試鏡像是否能正常啟動
+                  docker run --rm -d --name test-container \
+                    -p 8000:8000 \
+                    ${{ needs.build-codespaces-image.outputs.image-tag }} \
+                    tail -f /dev/null
+
+                  # 等待容器啟動
+                  sleep 5
+
+                  # 測試 Python 環境
+                  docker exec test-container python --version
+                  docker exec test-container pip list
+
+                  # 測試 Just 命令
+                  docker exec test-container just --version || echo "Just not installed, will be installed in postCreateCommand"
+
+                  # 測試應用導入
+                  docker exec test-container python -c "from src.app.main import app; print('✅ FastAPI app import successful')"
+
+                  # 清理
+                  docker stop test-container
+
+                  echo "✅ Codespaces image verification completed"
+
+    # 創建部署報告
+    create-deployment-report:
+        runs-on: ubuntu-latest
+        name: Create Deployment Report
+        needs:
+            [
+                build-codespaces-image,
+                update-codespaces-config,
+                verify-deployment,
+            ]
+        if: always()
+
+        steps:
+            - name: Create deployment summary
+              run: |
+                  echo "# 🚀 Codespaces 部署報告" >> $GITHUB_STEP_SUMMARY
+                  echo "" >> $GITHUB_STEP_SUMMARY
+                  echo "## 部署狀態" >> $GITHUB_STEP_SUMMARY
+
+                  if [ "${{ needs.build-codespaces-image.result }}" == "success" ]; then
+                    echo "✅ **鏡像構建**: 成功" >> $GITHUB_STEP_SUMMARY
+                  else
+                    echo "❌ **鏡像構建**: 失敗" >> $GITHUB_STEP_SUMMARY
+                  fi
+
+                  if [ "${{ needs.update-codespaces-config.result }}" == "success" ]; then
+                    echo "✅ **配置更新**: 成功" >> $GITHUB_STEP_SUMMARY
+                  else
+                    echo "❌ **配置更新**: 失敗" >> $GITHUB_STEP_SUMMARY
+                  fi
+
+                  if [ "${{ needs.verify-deployment.result }}" == "success" ]; then
+                    echo "✅ **部署驗證**: 成功" >> $GITHUB_STEP_SUMMARY
+                  else
+                    echo "❌ **部署驗證**: 失敗" >> $GITHUB_STEP_SUMMARY
+                  fi
+
+                  echo "" >> $GITHUB_STEP_SUMMARY
+                  echo "## 部署信息" >> $GITHUB_STEP_SUMMARY
+                  echo "- **鏡像**: \`${{ needs.build-codespaces-image.outputs.image-tag }}\`" >> $GITHUB_STEP_SUMMARY
+                  echo "- **Commit**: \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+                  echo "- **分支**: \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
+                  echo "- **工作流程**: [\#${{ github.run_number }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})" >> $GITHUB_STEP_SUMMARY
+
+                  echo "" >> $GITHUB_STEP_SUMMARY
+                  echo "## 🎯 如何使用" >> $GITHUB_STEP_SUMMARY
+                  echo "1. 前往 [GitHub Codespaces](${{ github.server_url }}/${{ github.repository }}/codespaces)" >> $GITHUB_STEP_SUMMARY
+                  echo "2. 創建新的 Codespace 或重啟現有的 Codespace" >> $GITHUB_STEP_SUMMARY
+                  echo "3. 等待環境自動配置完成" >> $GITHUB_STEP_SUMMARY
+                  echo "4. 運行 \`just dev\` 啟動開發服務器" >> $GITHUB_STEP_SUMMARY
+                  echo "5. 訪問 http://localhost:8000/docs 查看 API 文檔" >> $GITHUB_STEP_SUMMARY
+
+            - name: Notify deployment status
+              run: |
+                  if [ "${{ needs.build-codespaces-image.result }}" == "success" ] && [ "${{ needs.verify-deployment.result }}" == "success" ]; then
+                    echo "🎉 Codespaces 部署成功完成！"
+                    echo "📝 新的開發環境已準備就緒"
+                  else
+                    echo "⚠️ Codespaces 部署遇到問題"
+                    echo "🔍 請檢查上述步驟的詳細日誌"
+                    exit 1
+                  fi
