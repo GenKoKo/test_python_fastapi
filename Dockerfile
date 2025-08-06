@@ -47,8 +47,8 @@ RUN if [ "$CODESPACES" = "true" ]; then \
 # 安裝 uv
 RUN pip install uv
 
-# 複製項目配置文件
-COPY pyproject.toml uv.lock ./
+# 複製源代碼（需要在 uv sync 之前，因為 pyproject.toml 引用了 src 目錄）
+COPY . .
 
 # 安裝 Python 依賴（包括開發依賴）
 RUN uv sync --dev
@@ -56,12 +56,9 @@ RUN uv sync --dev
 # Codespaces 特定的預安裝
 RUN if [ "$PREBUILD" = "true" ]; then \
     echo "🔨 Running prebuild optimizations..." && \
-    pip install ipython jupyter && \
+    uv add --dev ipython jupyter && \
     echo "✅ Prebuild optimizations completed"; \
     fi
-
-# 複製源代碼
-COPY . .
 
 # 暴露端口
 EXPOSE 8000
@@ -78,14 +75,11 @@ RUN groupadd -r appuser && useradd -r -g appuser appuser
 # 安裝 uv
 RUN pip install uv
 
-# 複製項目配置文件
-COPY pyproject.toml uv.lock ./
+# 複製源代碼
+COPY --chown=appuser:appuser . .
 
 # 安裝生產依賴
 RUN uv sync --no-dev
-
-# 複製源代碼
-COPY --chown=appuser:appuser . .
 
 # 切換到非 root 用戶
 USER appuser
