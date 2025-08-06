@@ -74,7 +74,7 @@ jobs:
                   push: true
                   tags: ${{ steps.meta.outputs.tags }}
                   labels: ${{ steps.meta.outputs.labels }}
-                  cache-from: type=gha,scope=codespaces
+                  cache-from: type=gha,scope=gha
                   cache-to: type=gha,mode=max,scope=gha
                   build-args: |
                       CODESPACES=true
