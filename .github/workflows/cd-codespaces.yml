@@ -17,6 +17,12 @@ on:
                 default: false
                 type: boolean
 
+permissions:
+    contents: write
+    packages: write
+    actions: write
+    codespaces: write
+
 env:
     REGISTRY: ghcr.io
     IMAGE_NAME: ${{ github.repository }}
@@ -79,6 +85,8 @@ jobs:
         runs-on: ubuntu-latest
         name: Update Codespaces Configuration
         needs: build-codespaces-image
+        permissions:
+            contents: write
 
         steps:
             - name: Checkout code
@@ -174,6 +182,10 @@ jobs:
         name: Trigger Codespaces Prebuild
         needs: [build-codespaces-image, update-codespaces-config]
         if: github.event.inputs.force_rebuild == 'true' || contains(github.event.head_commit.message, '[prebuild]')
+        permissions:
+            actions: write
+            contents: read
+            codespaces: write
 
         steps:
             - name: Trigger Codespaces Prebuild
@@ -201,10 +213,20 @@ jobs:
         runs-on: ubuntu-latest
         name: Verify Codespaces Deployment
         needs: [build-codespaces-image, update-codespaces-config]
+        permissions:
+            contents: read
+            packages: read
 
         steps:
             - name: Checkout code
               uses: actions/checkout@v4
+
+            - name: Log in to Container Registry
+              uses: docker/login-action@v3
+              with:
+                  registry: ${{ env.REGISTRY }}
+                  username: ${{ github.actor }}
+                  password: ${{ secrets.GITHUB_TOKEN }}
 
             - name: Test Docker image
               run: |
