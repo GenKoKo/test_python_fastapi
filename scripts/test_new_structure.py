@@ -99,9 +99,7 @@ def test_database_operations():
 
         # 測試統計
         stats = db.get_stats()
-        print(
-            f"✅ 統計信息: {stats['items']['total']} 商品, {stats['users']['total']} 用戶"
-        )
+        print(f"✅ 統計信息: {stats['items']['total']} 商品, {stats['users']['total']} 用戶")
 
         return True
 

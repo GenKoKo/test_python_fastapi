@@ -42,9 +42,7 @@ class ItemService:
             item_dict = item_data.dict()
             created_item = db.create_item(item_dict)
 
-            app_logger.info(
-                f"商品創建成功: ID={created_item['id']}, 名稱={item_data.name}"
-            )
+            app_logger.info(f"商品創建成功: ID={created_item['id']}, 名稱={item_data.name}")
             return created_item
 
         except Exception as e:
