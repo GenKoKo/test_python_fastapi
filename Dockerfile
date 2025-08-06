@@ -19,15 +19,47 @@ RUN apt-get update && apt-get install -y \
 # 開發階段
 FROM base as development
 
+# Codespaces 和預構建支持
+ARG CODESPACES=false
+ARG INSTALL_DEV_TOOLS=false
+ARG PREBUILD=false
+
+# 安裝額外的系統工具（Codespaces 需要）
+RUN if [ "$CODESPACES" = "true" ]; then \
+    apt-get update && apt-get install -y \
+        git \
+        zsh \
+        curl \
+        wget \
+        vim \
+        nano \
+        htop \
+        tree \
+        jq \
+        && rm -rf /var/lib/apt/lists/*; \
+    fi
+
+# 安裝 Just 命令工具（Codespaces 需要）
+RUN if [ "$CODESPACES" = "true" ]; then \
+    curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to /usr/local/bin; \
+    fi
+
 # 複製依賴文件
-COPY requirements.txt .
+COPY requirements/ requirements/
 
 # 安裝 Python 依賴
 RUN pip install --upgrade pip && \
-    pip install -r requirements.txt
+    pip install -r requirements/dev.txt
 
 # 安裝開發工具
 RUN pip install pytest pytest-cov black flake8 mypy
+
+# Codespaces 特定的預安裝
+RUN if [ "$PREBUILD" = "true" ]; then \
+    echo "🔨 Running prebuild optimizations..." && \
+    pip install ipython jupyter && \
+    echo "✅ Prebuild optimizations completed"; \
+    fi
 
 # 複製源代碼
 COPY . .

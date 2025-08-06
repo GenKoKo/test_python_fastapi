@@ -116,7 +116,7 @@ def test_dependencies():
     
     if missing_packages:
         print(f"\n❌ 缺少依賴包: {', '.join(missing_packages)}")
-        print("💡 請運行: pip install -r requirements.txt")
+        print("💡 請運行: pip install -r requirements/base.txt")
         return False
     
     print("✅ 所有依賴包都已安裝")

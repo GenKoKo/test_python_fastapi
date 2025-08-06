@@ -48,7 +48,7 @@ def check_dependencies():
     
     if missing_packages:
         print(f"\n❌ 缺少依賴: {', '.join(missing_packages)}")
-        print("💡 請運行: pip install -r requirements.txt")
+        print("💡 請運行: pip install -r requirements/base.txt")
         return False
     
     return True
@@ -95,7 +95,7 @@ def check_project_files():
     """檢查項目文件是否存在"""
     print("\n📁 檢查項目文件...")
     
-    required_files = ['main.py', 'requirements.txt', 'README.md']
+    required_files = ['main.py', 'requirements/base.txt', 'README.md']
     missing_files = []
     
     for file in required_files:
