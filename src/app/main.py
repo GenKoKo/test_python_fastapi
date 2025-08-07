@@ -5,6 +5,7 @@ FastAPI 主應用文件
 
 import threading
 import time
+from typing import Dict, Any
 import requests
 from fastapi import FastAPI
 
@@ -57,7 +58,7 @@ app.include_router(stats_router)
 
 # 根路由
 @app.get("/", tags=["基本"])
-async def read_root():
+async def read_root() -> Dict[str, Any]:
     """歡迎頁面"""
     app_logger.info("📋 訪問根路徑")
     return {
@@ -75,7 +76,7 @@ async def read_root():
     }
 
 
-def populate_sample_data():
+def populate_sample_data() -> None:
     """填充示例數據"""
     if not settings.populate_sample_data:
         app_logger.info("⏭️  跳過示例數據填充（配置已禁用）")
@@ -92,11 +93,11 @@ def populate_sample_data():
         raise
 
 
-def run_api_tests():
+def run_api_tests() -> None:
     """運行 API 測試"""
     BASE_URL = f"http://{settings.host}:{settings.port}"
 
-    def wait_for_server():
+    def wait_for_server() -> bool:
         """等待服務器啟動"""
         max_attempts = 30
         app_logger.info("⏳ 等待服務器啟動...")
@@ -114,7 +115,7 @@ def run_api_tests():
         app_logger.error("❌ 服務器啟動超時")
         return False
 
-    def run_tests():
+    def run_tests() -> None:
         """運行測試"""
         app_logger.info("🧪 開始 API 自動測試...")
 
@@ -188,7 +189,7 @@ def run_api_tests():
 
 # FastAPI 事件處理
 @app.on_event("startup")
-async def startup_event():
+async def startup_event() -> None:
     """應用啟動時執行"""
     log_startup()
 
@@ -203,7 +204,7 @@ async def startup_event():
     if settings.enable_auto_test:
         app_logger.info(f"🧪 將在 {settings.test_delay} 秒後啟動自動測試")
 
-        def delayed_test():
+        def delayed_test() -> None:
             time.sleep(settings.test_delay)
             run_api_tests()
 
@@ -214,7 +215,7 @@ async def startup_event():
 
 
 @app.on_event("shutdown")
-async def shutdown_event():
+async def shutdown_event() -> None:
     """應用關閉時執行"""
     log_shutdown()
     stats = db.get_stats()

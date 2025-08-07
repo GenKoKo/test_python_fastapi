@@ -21,13 +21,14 @@ class UserCreate(UserBase):
     pass
 
 
-class UserUpdate(UserBase):
+class UserUpdate(BaseModel):
     """更新用戶模型"""
 
     username: Optional[str] = Field(
         None, description="用戶名", min_length=3, max_length=50
     )
     email: Optional[str] = Field(None, description="電子郵件")
+    full_name: Optional[str] = Field(None, description="全名", max_length=100)
 
 
 class User(UserBase):

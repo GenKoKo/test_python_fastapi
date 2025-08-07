@@ -58,7 +58,7 @@ class UserService:
             raise HTTPException(status_code=500, detail="創建用戶時發生錯誤")
 
     @staticmethod
-    def update_user(user_id: int, user_data: UserUpdate) -> Dict[str, Any]:
+    def update_user(user_id: int, user_data: UserUpdate) -> Optional[Dict[str, Any]]:
         """更新用戶"""
         app_logger.info(f"更新用戶: ID={user_id}")
 

@@ -52,7 +52,7 @@ class ItemService:
             raise HTTPException(status_code=500, detail="創建商品時發生錯誤")
 
     @staticmethod
-    def update_item(item_id: int, item_data: ItemUpdate) -> Dict[str, Any]:
+    def update_item(item_id: int, item_data: ItemUpdate) -> Optional[Dict[str, Any]]:
         """更新商品"""
         app_logger.info(f"更新商品: ID={item_id}")
 

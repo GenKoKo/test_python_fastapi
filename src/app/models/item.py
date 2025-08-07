@@ -22,13 +22,15 @@ class ItemCreate(ItemBase):
     pass
 
 
-class ItemUpdate(ItemBase):
+class ItemUpdate(BaseModel):
     """更新商品模型"""
 
     name: Optional[str] = Field(
         None, description="商品名稱", min_length=1, max_length=100
     )
+    description: Optional[str] = Field(None, description="商品描述", max_length=500)
     price: Optional[float] = Field(None, description="商品價格", gt=0)
+    is_available: Optional[bool] = Field(None, description="是否可用")
 
 
 class Item(ItemBase):

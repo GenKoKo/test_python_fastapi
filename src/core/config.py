@@ -7,59 +7,59 @@ import os
 from typing import Optional
 from pydantic_settings import BaseSettings
 from pydantic import Field
+from typing import Annotated
 
 
 class Settings(BaseSettings):
     """應用配置類"""
 
     # 應用基本配置
-    app_name: str = Field(default="FastAPI 初級入門 API", env="APP_NAME")
-    app_description: str = Field(
-        default="這是一個 FastAPI 的基本入門實作，包含常用的 API 操作",
-        env="APP_DESCRIPTION",
+    app_name: Annotated[str, Field(alias="APP_NAME")] = "FastAPI 初級入門 API"
+    app_description: Annotated[str, Field(alias="APP_DESCRIPTION")] = (
+        "這是一個 FastAPI 的基本入門實作，包含常用的 API 操作"
     )
-    app_version: str = Field(default="1.0.0", env="APP_VERSION")
+    app_version: Annotated[str, Field(alias="APP_VERSION")] = "1.0.0"
 
     # 服務器配置
-    host: str = Field(default="127.0.0.1", env="HOST")
-    port: int = Field(default=8000, env="PORT")
-    reload: bool = Field(default=True, env="RELOAD")
+    host: Annotated[str, Field(alias="HOST")] = "127.0.0.1"
+    port: Annotated[int, Field(alias="PORT")] = 8000
+    reload: Annotated[bool, Field(alias="RELOAD")] = True
 
     # 日誌配置
-    log_level: str = Field(default="INFO", env="LOG_LEVEL")
-    log_format: str = Field(
-        default="%(asctime)s - %(name)s - %(levelname)s - %(message)s", env="LOG_FORMAT"
+    log_level: Annotated[str, Field(alias="LOG_LEVEL")] = "INFO"
+    log_format: Annotated[str, Field(alias="LOG_FORMAT")] = (
+        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
     )
-    log_file: Optional[str] = Field(default=None, env="LOG_FILE")
+    log_file: Annotated[Optional[str], Field(alias="LOG_FILE")] = None
 
     # 測試配置
-    enable_auto_test: bool = Field(default=True, env="ENABLE_AUTO_TEST")
-    test_delay: int = Field(default=2, env="TEST_DELAY")
+    enable_auto_test: Annotated[bool, Field(alias="ENABLE_AUTO_TEST")] = True
+    test_delay: Annotated[int, Field(alias="TEST_DELAY")] = 2
 
     # 數據配置
-    populate_sample_data: bool = Field(default=True, env="POPULATE_SAMPLE_DATA")
+    populate_sample_data: Annotated[bool, Field(alias="POPULATE_SAMPLE_DATA")] = True
 
     # API 配置
-    api_prefix: str = Field(default="", env="API_PREFIX")
-    docs_url: str = Field(default="/docs", env="DOCS_URL")
-    redoc_url: str = Field(default="/redoc", env="REDOC_URL")
+    api_prefix: Annotated[str, Field(alias="API_PREFIX")] = ""
+    docs_url: Annotated[str, Field(alias="DOCS_URL")] = "/docs"
+    redoc_url: Annotated[str, Field(alias="REDOC_URL")] = "/redoc"
 
     # 開發模式配置
-    debug: bool = Field(default=False, env="DEBUG")
-    
+    debug: Annotated[bool, Field(alias="DEBUG")] = False
+
     # 環境配置 (從 .env 文件中讀取的額外配置)
-    environment: Optional[str] = Field(default=None, env="ENVIRONMENT")
-    pythonpath: Optional[str] = Field(default=None, env="PYTHONPATH")
-    
+    environment: Annotated[Optional[str], Field(alias="ENVIRONMENT")] = None
+    pythonpath: Annotated[Optional[str], Field(alias="PYTHONPATH")] = None
+
     # API 版本配置
-    api_v1_str: str = Field(default="/api/v1", env="API_V1_STR")
-    project_name: str = Field(default="FastAPI Development", env="PROJECT_NAME")
-    version: str = Field(default="1.0.0", env="VERSION")
-    
+    api_v1_str: Annotated[str, Field(alias="API_V1_STR")] = "/api/v1"
+    project_name: Annotated[str, Field(alias="PROJECT_NAME")] = "FastAPI Development"
+    version: Annotated[str, Field(alias="VERSION")] = "1.0.0"
+
     # 文檔配置
-    enable_docs: bool = Field(default=True, env="ENABLE_DOCS")
-    enable_redoc: bool = Field(default=True, env="ENABLE_REDOC")
-    enable_openapi: bool = Field(default=True, env="ENABLE_OPENAPI")
+    enable_docs: Annotated[bool, Field(alias="ENABLE_DOCS")] = True
+    enable_redoc: Annotated[bool, Field(alias="ENABLE_REDOC")] = True
+    enable_openapi: Annotated[bool, Field(alias="ENABLE_OPENAPI")] = True
 
     class Config:
         env_file = ".env"
@@ -78,7 +78,7 @@ def get_settings() -> Settings:
 
 
 # 配置驗證函數
-def validate_config():
+def validate_config() -> bool:
     """驗證配置的有效性"""
     errors = []
 
@@ -98,7 +98,7 @@ def validate_config():
 
 
 # 打印配置信息（用於調試）
-def print_config():
+def print_config() -> None:
     """打印當前配置（隱藏敏感信息）"""
     print("📋 當前配置:")
     print(f"  應用名稱: {settings.app_name}")

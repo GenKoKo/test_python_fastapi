@@ -11,7 +11,7 @@ from ..models import Item, User
 class MemoryDatabase:
     """內存數據庫類"""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """初始化數據庫"""
         self._items: List[Dict[str, Any]] = []
         self._users: List[Dict[str, Any]] = []
