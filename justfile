@@ -675,6 +675,62 @@ diagnose-cicd:
         exit 1
     fi
 
+# 手動發送部署通知
+send-deployment-notification:
+    #!/usr/bin/env bash
+    echo "🔔 手動發送部署通知..."
+    
+    # 設置環境變數
+    export GITHUB_REPOSITORY="$(git config --get remote.origin.url | sed 's/.*github.com[:/]\([^.]*\).*/\1/')"
+    export GITHUB_SERVER_URL="https://github.com"
+    export GITHUB_SHA="$(git rev-parse HEAD)"
+    export GITHUB_REF_NAME="$(git branch --show-current)"
+    export REGISTRY="ghcr.io"
+    export IMAGE_NAME="$GITHUB_REPOSITORY"
+    
+    if [ -f "scripts/send-deployment-notification.sh" ]; then
+        bash scripts/send-deployment-notification.sh
+    else
+        echo "❌ 通知腳本不存在: scripts/send-deployment-notification.sh"
+        exit 1
+    fi
+
+# 測試 Codespace 修復
+test-codespace-fix:
+    #!/usr/bin/env bash
+    echo "🔧 測試 Codespace 配置修復..."
+    current_branch=$(git branch --show-current)
+    
+    # 檢查是否有未提交的變更
+    if ! git diff --quiet || ! git diff --cached --quiet; then
+        echo "⚠️ 發現未提交的變更，正在提交..."
+        git add -A
+        git commit -m "fix: resolve Codespace startup issues - $(date)"
+    else
+        # 創建空提交來觸發 CI/CD
+        git commit --allow-empty -m "fix: test Codespace configuration fix - $(date)"
+    fi
+    
+    echo "📤 推送到當前分支: $current_branch"
+    git push origin "$current_branch"
+    
+    echo "✅ Codespace 修復測試已觸發"
+    echo ""
+    echo "🔧 修復內容："
+    echo "   - 移除了 Docker Compose 版本警告"
+    echo "   - 創建了缺少的 .env 文件"
+    echo "   - 簡化了 devcontainer 配置"
+    echo "   - 改用標準 Python 鏡像而非 Docker Compose"
+    echo "   - 創建了新的設置腳本"
+    echo ""
+    echo "📋 預期結果："
+    echo "   ✅ Codespace 應該能正常啟動"
+    echo "   ✅ 不再出現 .env 文件錯誤"
+    echo "   ✅ 不再出現 Docker Compose 版本警告"
+    echo "   ✅ 環境設置應該自動完成"
+    echo ""
+    echo "🔗 測試 Codespace: https://github.com/$(git config --get remote.origin.url | sed 's/.*github.com[:/]\([^.]*\).*/\1/')/codespaces"
+
 # 📚 顯示詳細的幫助信息
 help:
     @echo "🚀 FastAPI 項目管理命令完整指南"
@@ -728,6 +784,7 @@ help:
     @echo "🧪 CI/CD 測試命令："
     @echo "  just trigger-ci          - 快速觸發 CI 測試"
     @echo "  just test-deployment-fix - 測試 Codespaces 部署修復"
+    @echo "  just test-codespace-fix  - 測試 Codespace 配置修復"
     @echo "  just diagnose-cicd       - 診斷 CI/CD 問題"
     @echo "  just test-feature-ci     - 測試 Feature CI 流程"
     @echo "  just test-ci-cd          - 運行完整 CI/CD 測試"

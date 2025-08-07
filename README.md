@@ -241,6 +241,11 @@ just reinstall
 3. 更新 devcontainer 配置
 4. 觸發預構建優化
 
+📖 **詳細指南**:
+
+-   [GitHub Codespaces 完整部署指南](docs/CODESPACES_DEPLOYMENT_GUIDE.md)
+-   [CI/CD 通知系統說明](docs/NOTIFICATION_SYSTEM.md)
+
 ### Docker 部署
 
 ```bash

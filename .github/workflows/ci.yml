@@ -277,7 +277,7 @@ jobs:
         if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
 
         steps:
-            - name: Notify Codespaces deployment ready
+            - name: Create Codespaces deployment notification
               run: |
                   echo "🚀 Docker 鏡像構建完成，Codespaces 部署就緒"
                   echo "📦 鏡像: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
@@ -292,6 +292,35 @@ jobs:
                   echo "   https://github.com/${{ github.repository }}/actions/workflows/cd-codespaces.yml"
                   echo ""
                   echo "✅ CI/CD 流程完成！"
+
+                  # 創建 GitHub Actions 摘要
+                  {
+                    echo "# 🚀 Codespaces 部署通知"
+                    echo ""
+                    echo "## 📦 Docker 鏡像信息"
+                    echo "- **鏡像**: \`${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest\`"
+                    echo "- **構建時間**: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+                    echo "- **Commit**: [\`${{ github.sha }}\`](${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }})"
+                    echo "- **分支**: \`${{ github.ref_name }}\`"
+                    echo ""
+                    echo "## 🎯 如何使用 Codespaces"
+                    echo "1. 前往 [GitHub Codespaces](${{ github.server_url }}/${{ github.repository }}/codespaces)"
+                    echo "2. 點擊 **\"Create codespace on main\"** 或重啟現有的 Codespace"
+                    echo "3. 等待環境自動配置完成（約 2-3 分鐘）"
+                    echo "4. 運行 \`just codespaces-setup\` 完成設置"
+                    echo "5. 運行 \`just codespaces-start\` 啟動開發服務器"
+                    echo ""
+                    echo "## 🔗 相關連結"
+                    echo "- [查看 Codespaces 部署狀態](${{ github.server_url }}/${{ github.repository }}/actions/workflows/cd-codespaces.yml)"
+                    echo "- [GitHub Container Registry](${{ github.server_url }}/${{ github.repository }}/pkgs/container/${{ github.event.repository.name }})"
+                    echo "- [API 文檔預覽](https://\${CODESPACE_NAME}-8000.app.github.dev/docs)（Codespace 啟動後可用）"
+                    echo ""
+                    echo "## ✅ 部署狀態"
+                    echo "- ✅ Docker 鏡像構建完成"
+                    echo "- ✅ 鏡像已推送到 GitHub Container Registry"
+                    echo "- ✅ Codespaces 環境已準備就緒"
+                    echo "- 🔄 CD-Codespaces 工作流程將自動觸發"
+                  } >> $GITHUB_STEP_SUMMARY
 
     # 通知
     notify:
