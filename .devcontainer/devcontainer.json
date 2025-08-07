@@ -59,7 +59,7 @@
     "postCreateCommand": "bash .devcontainer/setup.sh",
 
     // 啟動命令
-    "postStartCommand": "echo '🚀 FastAPI Codespace 已準備就緒！運行 just dev 啟動開發服務器'",
+    "postStartCommand": "source ~/.bashrc && echo '🚀 FastAPI Codespace 已準備就緒！運行 just dev 啟動開發服務器' && just --version 2>/dev/null || echo '⚠️ 如果 just 命令無法使用，請執行: source ~/.bashrc'",
 
     // 用戶設定
     "remoteUser": "vscode",
@@ -85,6 +85,7 @@
     "containerEnv": {
         "PYTHONPATH": "/workspaces/${localWorkspaceFolderBasename}",
         "DEBUG": "true",
-        "ENVIRONMENT": "codespaces"
+        "ENVIRONMENT": "codespaces",
+        "PATH": "/home/vscode/.local/bin:${containerEnv:PATH}"
     }
 }

@@ -223,7 +223,14 @@ codespaces-setup:
         # 安裝 Just（如果尚未安裝）
         if ! command -v just >/dev/null 2>&1; then
             echo "📦 安裝 Just 命令工具..."
-            curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to /usr/local/bin
+            # 創建本地 bin 目錄
+            mkdir -p ~/.local/bin
+            # 安裝到用戶目錄（避免權限問題）
+            curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to ~/.local/bin
+            # 添加到 PATH
+            export PATH="$HOME/.local/bin:$PATH"
+            echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+            echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
         fi
         
         # 安裝 uv（如果尚未安裝）

@@ -46,11 +46,26 @@ class Settings(BaseSettings):
 
     # 開發模式配置
     debug: bool = Field(default=False, env="DEBUG")
+    
+    # 環境配置 (從 .env 文件中讀取的額外配置)
+    environment: Optional[str] = Field(default=None, env="ENVIRONMENT")
+    pythonpath: Optional[str] = Field(default=None, env="PYTHONPATH")
+    
+    # API 版本配置
+    api_v1_str: str = Field(default="/api/v1", env="API_V1_STR")
+    project_name: str = Field(default="FastAPI Development", env="PROJECT_NAME")
+    version: str = Field(default="1.0.0", env="VERSION")
+    
+    # 文檔配置
+    enable_docs: bool = Field(default=True, env="ENABLE_DOCS")
+    enable_redoc: bool = Field(default=True, env="ENABLE_REDOC")
+    enable_openapi: bool = Field(default=True, env="ENABLE_OPENAPI")
 
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
         case_sensitive = False
+        extra = "ignore"  # 忽略額外的環境變數
 
 
 # 創建全局配置實例

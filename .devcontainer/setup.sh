@@ -20,11 +20,11 @@ fi
 # 檢查 uv 版本
 echo "📦 uv 版本: $(uv --version 2>/dev/null || echo '未安裝')"
 
-# 安裝 Just（如果尚未安裝）
-if ! command -v just >/dev/null 2>&1; then
-    echo "🔧 安裝 Just 命令工具..."
-    curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to /usr/local/bin
-fi
+# 安裝 Just（使用專用安裝腳本）
+bash .devcontainer/install-just.sh
+
+# 確保 PATH 包含 ~/.local/bin
+export PATH="$HOME/.local/bin:$PATH"
 
 # 檢查 Just 版本
 echo "🔧 Just 版本: $(just --version 2>/dev/null || echo '未安裝')"
