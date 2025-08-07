@@ -1,55 +1,35 @@
 # Git
 .git
 .gitignore
-.gitattributes
-
-# Docker
-Dockerfile*
-docker-compose*
-.dockerignore
-
-# Development Scripts (keep justfile for container use)
-scripts/
 
 # Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
+__pycache__
+*.pyc
+*.pyo
+*.pyd
 .Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-MANIFEST
+env
+pip-log.txt
+pip-delete-this-directory.txt
+.tox
+.coverage
+.coverage.*
+.pytest_cache
+htmlcov
 
 # Virtual environments
-fastapi_env/
+.venv
 venv/
-env/
 ENV/
+env/
+fastapi_env/
 
-# IDE and Development Tools
+# IDE
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
-
-# AI Assistant Tools
-.kiro/
-.serena/
 
 # OS
 .DS_Store
@@ -61,22 +41,32 @@ ehthumbs.db
 Thumbs.db
 
 # Logs
-*.log
 logs/
+*.log
 
-# Testing
-.pytest_cache/
-.coverage
-htmlcov/
-.tox/
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-.hypothesis/
+# Temporary files
+*.tmp
+*.temp
 
 # Documentation
 docs/_build/
+
+# Node modules (if any)
+node_modules/
+
+# Local development files
+.env.local
+.env.development
+.env.test
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# Coverage reports
+htmlcov/
+.coverage
 
 # Jupyter Notebook
 .ipynb_checkpoints
@@ -84,15 +74,38 @@ docs/_build/
 # pyenv
 .python-version
 
+# pipenv
+Pipfile.lock
+
+# PEP 582
+__pypackages__/
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath parsed files
+*.sage.py
+
 # Environments
-.env.local
-.env.development
-.env.test
-.env.production
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
 
-# Build Tools
-.just/
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
 
-# Temporary files
-*.tmp
-*.temp
+# Pyre type checker
+.pyre/
+
+# pytype static type analyzer
+.pytype/
+
+# Cython debug symbols
+cython_debug/

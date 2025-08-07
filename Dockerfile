@@ -47,11 +47,15 @@ RUN if [ "$CODESPACES" = "true" ]; then \
 # 安裝 uv
 RUN pip install uv
 
-# 複製源代碼（需要在 uv sync 之前，因為 pyproject.toml 引用了 src 目錄）
-COPY . .
+# 首先複製依賴文件
+COPY pyproject.toml uv.lock ./
+COPY requirements/ requirements/
 
 # 安裝 Python 依賴（包括開發依賴）
 RUN uv sync --dev
+
+# 然後複製源代碼
+COPY . .
 
 # Codespaces 特定的預安裝
 RUN if [ "$PREBUILD" = "true" ]; then \
