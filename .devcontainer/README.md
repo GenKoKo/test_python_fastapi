@@ -1,112 +1,143 @@
-# 🚀 Codespaces 開發環境設置
+# 🚀 FastAPI Codespaces 環境
 
-## 📋 自動安裝流程
+這個目錄包含了 GitHub Codespaces 的配置文件，用於創建一個完整的 FastAPI 開發環境。
 
-當您創建 Codespace 時，以下流程會自動執行：
+## 📁 文件說明
 
-### 1. **devcontainer.json 配置**
+-   `devcontainer.json` - 主要的 Codespaces 配置文件
+-   `devcontainer.codespaces.json` - Codespaces 專用配置（由 CD 工作流程自動生成）
+-   `setup.sh` - 環境設置腳本（備用，自定義鏡像中已預安裝）
+-   `install-just.sh` - Just 命令工具安裝腳本（備用）
+-   `test-codespaces.sh` - 環境測試腳本
 
-```json
-{
-    "postCreateCommand": "bash .devcontainer/setup.sh",
-    "containerEnv": {
-        "PATH": "/home/vscode/.local/bin:${containerEnv:PATH}"
-    }
-}
-```
+## 🔧 配置特點
 
-### 2. **setup.sh 主要安裝腳本**
+### 自定義 Docker 鏡像
 
--   安裝 uv 包管理器
--   調用 `install-just.sh` 安裝 Just
--   同步 Python 依賴
--   驗證環境設置
+-   使用 `ghcr.io/genkoko/test_python_fastapi:codespaces-latest`
+-   預安裝了 Python、uv、just 等工具
+-   包含完整的開發依賴
 
-### 3. **install-just.sh 專用 Just 安裝**
+### 開發工具
 
--   創建 `~/.local/bin` 目錄
--   下載並安裝 Just 到用戶目錄
--   設定 PATH 環境變數
--   添加到 shell 配置文件
+-   **Python 3.11** - 主要開發語言
+-   **uv** - 快速的 Python 包管理器
+-   **just** - 命令運行器（類似 make）
+-   **FastAPI** - Web 框架
+-   **VS Code 擴展** - Python、Docker、GitHub Copilot 等
 
-## 🔧 手動修復方法
+### 端口配置
 
-如果自動安裝失敗，您可以手動執行：
+-   **8000** - FastAPI 應用服務器
+-   **5678** - Python 調試器
 
-### 方法 1: 使用修復腳本
+## 🚀 快速開始
 
-```bash
-bash scripts/fix-just-install.sh
-```
+### 1. 創建 Codespace
 
-### 方法 2: 使用專用安裝腳本
+1. 前往 [GitHub Codespaces](https://github.com/GenKoKo/test_python_fastapi/codespaces)
+2. 點擊 "Create codespace on master"
+3. 等待環境自動配置完成
 
-```bash
-bash .devcontainer/install-just.sh
-source ~/.bashrc
-```
-
-### 方法 3: 手動安裝
+### 2. 驗證環境
 
 ```bash
-mkdir -p ~/.local/bin
-curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to ~/.local/bin
-export PATH="$HOME/.local/bin:$PATH"
-echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
-source ~/.bashrc
-```
+# 運行環境測試
+bash .devcontainer/test-codespaces.sh
 
-## 🧪 驗證安裝
-
-```bash
-# 檢查 Just 是否可用
+# 檢查 just 命令
 just --version
-
-# 查看所有可用命令
 just --list
+```
 
+### 3. 開始開發
+
+```bash
 # 啟動開發服務器
 just dev
+
+# 運行測試
+just test-unit
+
+# 查看 API 文檔
+# 訪問: http://localhost:8000/docs
 ```
 
-## ⚠️ 常見問題
+## 🔍 故障排除
 
-### 問題 1: `just: command not found`
+### Just 命令不可用
 
-**解決方案**:
+如果 `just` 命令不可用，可能的原因：
+
+1. **使用了錯誤的鏡像**
+
+    ```bash
+    # 檢查當前鏡像
+    echo $CODESPACES_IMAGE
+    # 應該顯示: ghcr.io/genkoko/test_python_fastapi:codespaces-latest
+    ```
+
+2. **PATH 問題**
+
+    ```bash
+    # 檢查 just 是否存在
+    ls -la /usr/local/bin/just
+
+    # 手動添加到 PATH
+    export PATH="/usr/local/bin:$PATH"
+    ```
+
+3. **使用備用安裝**
+    ```bash
+    # 運行安裝腳本
+    bash .devcontainer/install-just.sh
+    source ~/.bashrc
+    ```
+
+### Python 環境問題
 
 ```bash
-source ~/.bashrc
-# 或
-export PATH="$HOME/.local/bin:$PATH"
+# 檢查 Python 解釋器
+which python
+python --version
+
+# 檢查虛擬環境
+ls -la .venv/
+
+# 重新同步依賴
+uv sync --dev
 ```
 
-### 問題 2: 權限被拒絕
+### 端口訪問問題
 
-**原因**: 嘗試安裝到 `/usr/local/bin`
-**解決方案**: 使用用戶目錄 `~/.local/bin`
+1. 確保端口 8000 已轉發
+2. 檢查 VS Code 的端口面板
+3. 使用 `just dev` 啟動服務器
 
-### 問題 3: PATH 沒有生效
+## 📋 可用命令
 
-**解決方案**:
+運行 `just --list` 查看所有可用命令：
 
 ```bash
-echo $PATH  # 檢查 PATH
-source ~/.bashrc  # 重新載入配置
+just dev              # 啟動開發服務器
+just test-unit         # 運行單元測試
+just test-integration  # 運行整合測試
+just lint              # 代碼檢查
+just format            # 代碼格式化
+just clean             # 清理緩存文件
 ```
 
-## 📁 相關文件
+## 🔄 更新環境
 
--   `devcontainer.json` - 容器配置
--   `setup.sh` - 主要設置腳本
--   `install-just.sh` - Just 專用安裝腳本
--   `../scripts/fix-just-install.sh` - 修復腳本（scripts 目錄）
+當 Docker 鏡像更新時：
 
-## 🎯 預期結果
+1. **自動更新**：推送代碼到 master 分支會自動觸發鏡像構建
+2. **手動更新**：重新創建 Codespace 以使用最新鏡像
 
-安裝完成後，您應該能夠：
+## 📞 支援
 
--   ✅ 執行 `just --version` 查看版本
--   ✅ 執行 `just --list` 查看命令列表
--   ✅ 執行 `just dev` 啟動開發服務器
--   ✅ 在新的終端 session 中使用 just 命令
+如果遇到問題：
+
+1. 運行 `bash .devcontainer/test-codespaces.sh` 診斷環境
+2. 檢查 [GitHub Actions](https://github.com/GenKoKo/test_python_fastapi/actions) 的構建狀態
+3. 查看 [Issues](https://github.com/GenKoKo/test_python_fastapi/issues) 或創建新的問題報告
