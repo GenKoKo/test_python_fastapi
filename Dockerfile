@@ -51,11 +51,21 @@ RUN pip install uv
 COPY pyproject.toml uv.lock ./
 COPY requirements/ requirements/
 
+# 複製 README.md（pyproject.toml 中引用）
+COPY README.md ./
+
+# 創建 src 目錄並複製源代碼（setuptools 需要）
+RUN mkdir -p src
+COPY src/ src/
+
 # 安裝 Python 依賴（包括開發依賴）
+# 現在 setuptools 可以找到 src 目錄和 README.md
 RUN uv sync --dev
 
-# 然後複製源代碼
-COPY . .
+# 複製其餘文件（如果需要）
+COPY tests/ tests/
+COPY scripts/ scripts/
+COPY docs/ docs/
 
 # Codespaces 特定的預安裝
 RUN if [ "$PREBUILD" = "true" ]; then \
@@ -79,11 +89,20 @@ RUN groupadd -r appuser && useradd -r -g appuser appuser
 # 安裝 uv
 RUN pip install uv
 
-# 複製源代碼
-COPY --chown=appuser:appuser . .
+# 複製依賴文件和基本專案結構
+COPY --chown=appuser:appuser pyproject.toml uv.lock ./
+COPY --chown=appuser:appuser requirements/ requirements/
+COPY --chown=appuser:appuser README.md ./
+
+# 創建 src 目錄並複製源代碼
+RUN mkdir -p src
+COPY --chown=appuser:appuser src/ src/
 
 # 安裝生產依賴
 RUN uv sync --no-dev
+
+# 複製其餘文件
+COPY --chown=appuser:appuser . .
 
 # 切換到非 root 用戶
 USER appuser
