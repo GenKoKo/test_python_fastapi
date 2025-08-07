@@ -579,6 +579,45 @@ trigger-ci:
     
     git checkout "$current_branch"
 
+# 測試修復後的 CI/CD 部署
+test-deployment-fix:
+    #!/usr/bin/env bash
+    echo "🔧 測試 Codespaces 部署修復..."
+    current_branch=$(git branch --show-current)
+    
+    # 檢查是否有未提交的變更
+    if ! git diff --quiet || ! git diff --cached --quiet; then
+        echo "⚠️ 發現未提交的變更，正在提交..."
+        git add -A
+        git commit -m "fix: resolve CD-Codespaces deployment issues - $(date)"
+    else
+        # 創建空提交來觸發 CI/CD
+        git commit --allow-empty -m "fix: test CD-Codespaces deployment fix - $(date)"
+    fi
+    
+    echo "📤 推送到當前分支: $current_branch"
+    git push origin "$current_branch"
+    
+    echo "✅ 部署修復測試已觸發"
+    echo ""
+    echo "🔧 修復內容："
+    echo "   CI 工作流程："
+    echo "   - 移除了有權限問題的 workflow dispatch 觸發"
+    echo "   - 改為通知 Codespaces 部署就緒"
+    echo ""
+    echo "   CD-Codespaces 工作流程："
+    echo "   - 改進了 Docker 鏡像驗證邏輯"
+    echo "   - 增強了錯誤處理和容錯性"
+    echo "   - 修復了部署報告生成問題"
+    echo ""
+    echo "📋 預期結果："
+    echo "   ✅ CI: 'Notify Codespaces Ready' 步驟應該成功"
+    echo "   ✅ CD: 'Verify Codespaces Deployment' 應該更穩定"
+    echo "   ✅ CD: 'Create Deployment Report' 應該成功"
+    echo "   ✅ 不再出現權限錯誤"
+    echo ""
+    echo "🔗 查看結果: https://github.com/$(git config --get remote.origin.url | sed 's/.*github.com[:/]\([^.]*\).*/\1/')/actions"
+
 # 檢查 CI/CD 狀態
 check-ci-status:
     #!/usr/bin/env bash
@@ -674,10 +713,11 @@ help:
     @echo "  just clean-all      - 清理所有臨時文件和緩存"
     @echo ""
     @echo "🧪 CI/CD 測試命令："
-    @echo "  just trigger-ci     - 快速觸發 CI 測試"
-    @echo "  just test-feature-ci - 測試 Feature CI 流程"
-    @echo "  just test-ci-cd     - 運行完整 CI/CD 測試"
-    @echo "  just check-ci-status - 檢查 CI/CD 配置狀態"
+    @echo "  just trigger-ci          - 快速觸發 CI 測試"
+    @echo "  just test-deployment-fix - 測試 Codespaces 部署修復"
+    @echo "  just test-feature-ci     - 測試 Feature CI 流程"
+    @echo "  just test-ci-cd          - 運行完整 CI/CD 測試"
+    @echo "  just check-ci-status     - 檢查 CI/CD 配置狀態"
     @echo ""
     @echo "🚀 快速開始組合命令："
     @echo "  just start          - 一鍵設置並運行應用"

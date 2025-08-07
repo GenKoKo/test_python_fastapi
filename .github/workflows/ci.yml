@@ -228,26 +228,29 @@ jobs:
                   # 這裡可以添加實際的部署腳本
                   echo "✅ Production deployment completed"
 
-    # 觸發 Codespaces 部署
-    trigger-codespaces-deployment:
+    # 通知 Codespaces 部署就緒
+    notify-codespaces-ready:
         runs-on: ubuntu-latest
-        name: Trigger Codespaces Deployment
+        name: Notify Codespaces Ready
         needs: build-and-push
         if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
 
         steps:
-            - name: Trigger Codespaces CD workflow
-              uses: actions/github-script@v7
-              with:
-                  github-token: ${{ secrets.GITHUB_TOKEN }}
-                  script: |
-                      const response = await github.rest.actions.createWorkflowDispatch({
-                        owner: context.repo.owner,
-                        repo: context.repo.repo,
-                        workflow_id: 'cd-codespaces.yml',
-                        ref: 'main'
-                      });
-                      console.log('✅ Codespaces deployment workflow triggered');
+            - name: Notify Codespaces deployment ready
+              run: |
+                  echo "🚀 Docker 鏡像構建完成，Codespaces 部署就緒"
+                  echo "📦 鏡像: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest"
+                  echo "🔗 GitHub Container Registry: https://github.com/${{ github.repository }}/pkgs/container/${{ github.event.repository.name }}"
+                  echo ""
+                  echo "📋 Codespaces 自動部署說明："
+                  echo "   ✅ Docker 鏡像已推送到 GitHub Container Registry"
+                  echo "   ✅ CD-Codespaces 工作流程會自動觸發（基於推送到 main 分支）"
+                  echo "   ✅ 新的 Codespace 將自動使用更新後的環境"
+                  echo ""
+                  echo "🔗 查看 Codespaces 部署狀態："
+                  echo "   https://github.com/${{ github.repository }}/actions/workflows/cd-codespaces.yml"
+                  echo ""
+                  echo "✅ CI/CD 流程完成！"
                       console.log('🔗 Workflow run:', response.data);
 
     # 通知
