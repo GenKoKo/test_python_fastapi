@@ -1,0 +1,53 @@
+{
+    "name": "FastAPI Development Environment (Codespaces)",
+    "image": "ghcr.io/genkoko/test_python_fastapi:codespaces-latest",
+    "workspaceFolder": "/app",
+
+    // VS Code 配置
+    "customizations": {
+        "vscode": {
+            "settings": {
+                "python.defaultInterpreterPath": "/app/.venv/bin/python",
+                "python.linting.enabled": true,
+                "python.linting.flake8Enabled": true,
+                "python.formatting.provider": "black",
+                "editor.formatOnSave": true,
+                "terminal.integrated.defaultProfile.linux": "bash"
+            },
+            "extensions": [
+                "ms-python.python",
+                "ms-python.flake8",
+                "ms-python.black-formatter",
+                "ms-vscode.vscode-json",
+                "redhat.vscode-yaml",
+                "ms-vscode.docker",
+                "GitHub.copilot",
+                "humao.rest-client"
+            ]
+        }
+    },
+
+    // 端口轉發
+    "forwardPorts": [8000, 5678],
+    "portsAttributes": {
+        "8000": {
+            "label": "FastAPI Application",
+            "onAutoForward": "openBrowser",
+            "protocol": "http"
+        }
+    },
+
+    // 啟動命令
+    "postCreateCommand": "echo '🚀 FastAPI Codespace 已準備就緒！' && just --version && echo '📋 可用命令:' && just --list",
+    "postStartCommand": "echo '🎉 環境已啟動，運行 just dev 開始開發'",
+
+    // 用戶設定
+    "remoteUser": "root",
+
+    // 環境變數
+    "containerEnv": {
+        "PYTHONPATH": "/app",
+        "DEBUG": "true",
+        "ENVIRONMENT": "codespaces"
+    }
+}

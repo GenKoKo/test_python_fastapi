@@ -1,13 +1,13 @@
 {
     "name": "FastAPI Development Environment",
-    "image": "mcr.microsoft.com/devcontainers/python:3.11",
-    "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+    "image": "ghcr.io/genkoko/test_python_fastapi:codespaces-latest",
+    "workspaceFolder": "/app",
 
     // 配置設定
     "customizations": {
         "vscode": {
             "settings": {
-                "python.defaultInterpreterPath": "/usr/local/bin/python",
+                "python.defaultInterpreterPath": "/app/.venv/bin/python",
                 "python.linting.enabled": true,
                 "python.linting.pylintEnabled": false,
                 "python.linting.flake8Enabled": true,
@@ -56,13 +56,13 @@
     },
 
     // 容器啟動後執行的命令
-    "postCreateCommand": "bash .devcontainer/setup.sh",
+    "postCreateCommand": "echo '🚀 使用自定義 Docker 鏡像，just 已預安裝' && just --version",
 
     // 啟動命令
-    "postStartCommand": "source ~/.bashrc && echo '🚀 FastAPI Codespace 已準備就緒！運行 just dev 啟動開發服務器' && just --version 2>/dev/null || echo '⚠️ 如果 just 命令無法使用，請執行: source ~/.bashrc'",
+    "postStartCommand": "echo '🚀 FastAPI Codespace 已準備就緒！' && echo '📋 可用命令:' && just --list",
 
     // 用戶設定
-    "remoteUser": "vscode",
+    "remoteUser": "root",
 
     // 功能配置
     "features": {
@@ -83,9 +83,9 @@
 
     // 環境變數
     "containerEnv": {
-        "PYTHONPATH": "/workspaces/${localWorkspaceFolderBasename}",
+        "PYTHONPATH": "/app",
         "DEBUG": "true",
         "ENVIRONMENT": "codespaces",
-        "PATH": "/home/vscode/.local/bin:${containerEnv:PATH}"
+        "PATH": "/usr/local/bin:${containerEnv:PATH}"
     }
 }
