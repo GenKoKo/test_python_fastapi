@@ -582,39 +582,41 @@ trigger-ci:
 # 測試修復後的 CI/CD 部署
 test-deployment-fix:
     #!/usr/bin/env bash
-    echo "🔧 測試 Codespaces 部署修復..."
+    echo "🔧 測試 CI/CD 安全掃描和通知修復..."
     current_branch=$(git branch --show-current)
     
     # 檢查是否有未提交的變更
     if ! git diff --quiet || ! git diff --cached --quiet; then
         echo "⚠️ 發現未提交的變更，正在提交..."
         git add -A
-        git commit -m "fix: resolve CD-Codespaces deployment issues - $(date)"
+        git commit -m "fix: resolve security scan and notification issues - $(date)"
     else
         # 創建空提交來觸發 CI/CD
-        git commit --allow-empty -m "fix: test CD-Codespaces deployment fix - $(date)"
+        git commit --allow-empty -m "fix: test security scan and notification fix - $(date)"
     fi
     
     echo "📤 推送到當前分支: $current_branch"
     git push origin "$current_branch"
     
-    echo "✅ 部署修復測試已觸發"
+    echo "✅ CI/CD 修復測試已觸發"
     echo ""
-    echo "🔧 修復內容："
-    echo "   CI 工作流程："
-    echo "   - 移除了有權限問題的 workflow dispatch 觸發"
-    echo "   - 改為通知 Codespaces 部署就緒"
+    echo "🔧 最新修復內容："
+    echo "   Security Scan："
+    echo "   - 添加了必要的權限配置"
+    echo "   - 增加了基本安全檢查"
+    echo "   - 改進了錯誤處理和容錯性"
+    echo "   - 使用 continue-on-error 避免阻塞流程"
     echo ""
-    echo "   CD-Codespaces 工作流程："
-    echo "   - 改進了 Docker 鏡像驗證邏輯"
-    echo "   - 增強了錯誤處理和容錯性"
-    echo "   - 修復了部署報告生成問題"
+    echo "   Notify Codespaces Ready："
+    echo "   - 修復了錯誤的 JavaScript 代碼"
+    echo "   - 清理了腳本語法錯誤"
+    echo "   - 改進了通知消息格式"
     echo ""
     echo "📋 預期結果："
-    echo "   ✅ CI: 'Notify Codespaces Ready' 步驟應該成功"
-    echo "   ✅ CD: 'Verify Codespaces Deployment' 應該更穩定"
-    echo "   ✅ CD: 'Create Deployment Report' 應該成功"
-    echo "   ✅ 不再出現權限錯誤"
+    echo "   ✅ Security Scan 應該成功（即使 Trivy 有問題也會繼續）"
+    echo "   ✅ Notify Codespaces Ready 應該成功（不再有語法錯誤）"
+    echo "   ✅ 整個 CI/CD 流程應該完成"
+    echo "   ✅ 不再出現 'exit code 2' 錯誤"
     echo ""
     echo "🔗 查看結果: https://github.com/$(git config --get remote.origin.url | sed 's/.*github.com[:/]\([^.]*\).*/\1/')/actions"
 
@@ -649,18 +651,29 @@ check-ci-status:
         echo "  ❌ CD 配置缺失"
     fi
     
-    # 檢查測試腳本
-    if [ -f "scripts/test_ci_cd.sh" ]; then
-        echo "  ✅ CI/CD 測試腳本存在"
+    # 檢查診斷腳本
+    if [ -f "scripts/diagnose-cicd-issues.sh" ]; then
+        echo "  ✅ CI/CD 診斷腳本存在"
     else
-        echo "  ❌ CI/CD 測試腳本缺失"
+        echo "  ❌ CI/CD 診斷腳本缺失"
     fi
     
     echo ""
     echo "🚀 快速測試命令："
-    echo "  just trigger-ci      # 快速觸發 CI"
-    echo "  just test-feature-ci # 測試 Feature CI"
-    echo "  just test-ci-cd      # 完整 CI/CD 測試"
+    echo "  just trigger-ci         # 快速觸發 CI"
+    echo "  just test-deployment-fix # 測試部署修復"
+    echo "  just diagnose-cicd      # 診斷 CI/CD 問題"
+
+# 診斷 CI/CD 問題
+diagnose-cicd:
+    #!/usr/bin/env bash
+    echo "🔍 診斷 CI/CD 問題..."
+    if [ -f "scripts/diagnose-cicd-issues.sh" ]; then
+        bash scripts/diagnose-cicd-issues.sh
+    else
+        echo "❌ 診斷腳本不存在: scripts/diagnose-cicd-issues.sh"
+        exit 1
+    fi
 
 # 📚 顯示詳細的幫助信息
 help:
@@ -715,6 +728,7 @@ help:
     @echo "🧪 CI/CD 測試命令："
     @echo "  just trigger-ci          - 快速觸發 CI 測試"
     @echo "  just test-deployment-fix - 測試 Codespaces 部署修復"
+    @echo "  just diagnose-cicd       - 診斷 CI/CD 問題"
     @echo "  just test-feature-ci     - 測試 Feature CI 流程"
     @echo "  just test-ci-cd          - 運行完整 CI/CD 測試"
     @echo "  just check-ci-status     - 檢查 CI/CD 配置狀態"

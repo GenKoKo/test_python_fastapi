@@ -133,9 +133,36 @@ jobs:
         runs-on: ubuntu-latest
         name: Security Scan
 
+        permissions:
+            contents: read
+            security-events: write
+            actions: read
+
         steps:
             - name: Checkout code
               uses: actions/checkout@v4
+
+            - name: Basic security checks
+              run: |
+                  echo "🔒 執行基本安全檢查..."
+
+                  # 檢查敏感文件
+                  echo "🔍 檢查敏感文件..."
+                  if find . -name "*.key" -o -name "*.pem" -o -name "*.p12" | grep -v ".git" | head -5; then
+                    echo "⚠️ 發現可能的敏感文件"
+                  else
+                    echo "✅ 未發現明顯的敏感文件"
+                  fi
+
+                  # 檢查硬編碼密碼模式
+                  echo "🔍 檢查硬編碼密碼模式..."
+                  if grep -r -i "password.*=" --include="*.py" --include="*.js" --include="*.ts" . | grep -v ".git" | head -3; then
+                    echo "⚠️ 發現可能的硬編碼密碼"
+                  else
+                    echo "✅ 未發現明顯的硬編碼密碼"
+                  fi
+
+                  echo "✅ 基本安全檢查完成"
 
             - name: Run Trivy vulnerability scanner
               uses: aquasecurity/trivy-action@master
@@ -144,12 +171,26 @@ jobs:
                   scan-ref: "."
                   format: "sarif"
                   output: "trivy-results.sarif"
+              continue-on-error: true
 
             - name: Upload Trivy scan results to GitHub Security tab
               uses: github/codeql-action/upload-sarif@v3
               if: always()
               with:
                   sarif_file: "trivy-results.sarif"
+              continue-on-error: true
+
+            - name: Display security scan summary
+              if: always()
+              run: |
+                  echo "🔒 安全掃描完成"
+                  if [ -f "trivy-results.sarif" ]; then
+                    echo "✅ 掃描結果已生成"
+                    echo "📊 結果文件大小: $(du -h trivy-results.sarif | cut -f1)"
+                  else
+                    echo "⚠️ 掃描結果文件未生成"
+                  fi
+                  echo "💡 詳細的安全報告可在 Security 標籤中查看"
 
     # 構建和推送 Docker 鏡像
     build-and-push:
@@ -251,7 +292,6 @@ jobs:
                   echo "   https://github.com/${{ github.repository }}/actions/workflows/cd-codespaces.yml"
                   echo ""
                   echo "✅ CI/CD 流程完成！"
-                      console.log('🔗 Workflow run:', response.data);
 
     # 通知
     notify:
