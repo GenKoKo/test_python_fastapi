@@ -11,9 +11,14 @@ ENV PYTHONPATH=/app \
     PIP_NO_CACHE_DIR=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1
 
-# 安裝系統依賴
+# 安裝系統依賴（包含 Codespaces 必需的基本工具）
 RUN apt-get update && apt-get install -y \
     curl \
+    wget \
+    git \
+    bash \
+    coreutils \
+    procps \
     && rm -rf /var/lib/apt/lists/*
 
 # 開發階段
@@ -27,21 +32,24 @@ ARG PREBUILD=false
 # 安裝額外的系統工具（Codespaces 需要）
 RUN if [ "$CODESPACES" = "true" ]; then \
     apt-get update && apt-get install -y \
-        git \
         zsh \
-        curl \
-        wget \
         vim \
         nano \
         htop \
         tree \
         jq \
+        sudo \
         && rm -rf /var/lib/apt/lists/*; \
     fi
 
-# 安裝 Just 命令工具（Codespaces 需要）
+# 安裝 Just 命令工具（總是安裝，不僅限於 Codespaces）
+RUN curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to /usr/local/bin
+
+# 創建 vscode 用戶（Codespaces 需要）
 RUN if [ "$CODESPACES" = "true" ]; then \
-    curl --proto '=https' --tlsv1.2 -sSf https://just.systems/install.sh | bash -s -- --to /usr/local/bin; \
+    groupadd -r vscode && \
+    useradd -r -g vscode -m -s /bin/bash vscode && \
+    echo "vscode ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers; \
     fi
 
 # 安裝 uv
@@ -66,6 +74,13 @@ RUN uv sync --dev
 COPY tests/ tests/
 COPY scripts/ scripts/
 COPY docs/ docs/
+
+# 設置 Codespaces 權限
+RUN if [ "$CODESPACES" = "true" ]; then \
+    chown -R vscode:vscode /app && \
+    mkdir -p /workspaces && \
+    chown -R vscode:vscode /workspaces; \
+    fi
 
 # Codespaces 特定的預安裝
 RUN if [ "$PREBUILD" = "true" ]; then \

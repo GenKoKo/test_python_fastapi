@@ -1,0 +1,27 @@
+{
+    "name": "FastAPI Development Environment (Simple)",
+    "image": "ghcr.io/genkoko/test_python_fastapi:codespaces-latest",
+    "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+
+    // 基本配置
+    "remoteUser": "vscode",
+
+    // 端口轉發
+    "forwardPorts": [8000],
+    "portsAttributes": {
+        "8000": {
+            "label": "FastAPI Application",
+            "onAutoForward": "openBrowser"
+        }
+    },
+
+    // 簡單的啟動命令
+    "postCreateCommand": "echo '🚀 FastAPI Codespace 已準備就緒！' && which just && just --version",
+
+    // 環境變數
+    "containerEnv": {
+        "PYTHONPATH": "/workspaces/${localWorkspaceFolderBasename}",
+        "DEBUG": "true",
+        "ENVIRONMENT": "codespaces"
+    }
+}

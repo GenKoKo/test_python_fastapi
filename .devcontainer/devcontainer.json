@@ -1,7 +1,7 @@
 {
     "name": "FastAPI Development Environment",
     "image": "ghcr.io/genkoko/test_python_fastapi:codespaces-latest",
-    "workspaceFolder": "/app",
+    "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
 
     // 配置設定
     "customizations": {
@@ -62,7 +62,7 @@
     "postStartCommand": "echo '🚀 FastAPI Codespace 已準備就緒！' && echo '📋 可用命令:' && just --list",
 
     // 用戶設定
-    "remoteUser": "root",
+    "remoteUser": "vscode",
 
     // 功能配置
     "features": {
@@ -86,6 +86,6 @@
         "PYTHONPATH": "/app",
         "DEBUG": "true",
         "ENVIRONMENT": "codespaces",
-        "PATH": "/usr/local/bin:${containerEnv:PATH}"
+        "PATH": "/usr/local/bin:/home/vscode/.local/bin:${containerEnv:PATH}"
     }
 }
